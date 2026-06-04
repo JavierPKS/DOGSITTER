@@ -1,0 +1,68 @@
+version: '3.8'
+
+services:
+  # 1. Base de Datos: Microservicio de Usuarios
+  db-usuarios:
+    image: postgres:15-alpine
+    container_name: dogsitter-db-usuarios
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: db_usuarios
+    ports:
+      - "5432:5432"
+    volumes:
+      - db-usuarios-data:/var/lib/postgresql/data
+      - ./ScriptsBD/db_usuarios.sql:/docker-entrypoint-initdb.d/init.sql
+    restart: unless-stopped
+
+  # 2. Base de Datos: Microservicio de Catálogos
+  db-catalogo:
+    image: postgres:15-alpine
+    container_name: dogsitter-db-catalogo
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: db_catalogo
+    ports:
+      - "5433:5432"
+    volumes:
+      - db-catalogo-data:/var/lib/postgresql/data
+      - ./ScriptsBD/db_catalogo.sql:/docker-entrypoint-initdb.d/init.sql
+    restart: unless-stopped
+
+  # 3. Base de Datos: Microservicio de Eventos
+  db-eventos:
+    image: postgres:15-alpine
+    container_name: dogsitter-db-eventos
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: db_eventos
+    ports:
+      - "5434:5432"
+    volumes:
+      - db-eventos-data:/var/lib/postgresql/data
+      - ./ScriptsBD/db_eventos.sql:/docker-entrypoint-initdb.d/init.sql
+    restart: unless-stopped
+
+  # 4. Base de Datos: Microservicio de Operaciones
+  db-operaciones:
+    image: postgres:15-alpine
+    container_name: dogsitter-db-operaciones
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: db_operaciones
+    ports:
+      - "5435:5432"
+    volumes:
+      - db-operaciones-data:/var/lib/postgresql/data
+      - ./ScriptsBD/db_operaciones.sql:/docker-entrypoint-initdb.d/init.sql
+    restart: unless-stopped
+
+volumes:
+  db-usuarios-data:
+  db-catalogo-data:
+  db-eventos-data:
+  db-operaciones-data:
