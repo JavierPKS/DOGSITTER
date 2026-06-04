@@ -20,77 +20,76 @@ import java.time.LocalDateTime;
 @RequiredArgsConstructor
 public class GastronomiaService {
 
-    private final MenuEventoRepository menuEventoRepository;
-    private final MenuCaninoRepository menuCaninoRepository;
-    private final MenuHumanoRepository menuHumanoRepository;
+        private final MenuEventoRepository menuEventoRepository;
+        private final MenuCaninoRepository menuCaninoRepository;
+        private final MenuHumanoRepository menuHumanoRepository;
 
-    @Transactional
-    public MenuCanino calcularYGuardarMenuCanino(MenuCaninoRequestDTO request) {
-        MenuEvento menuEvento = obtenerOCrearMenuEvento(request.getIdEvento());
+        @Transactional
+        public MenuCanino calcularYGuardarMenuCanino(MenuCaninoRequestDTO request) {
+                MenuEvento menuEvento = obtenerOCrearMenuEvento(request.getIdEvento());
 
-        int totalAlbondigas = (request.getPerrosPequenos() * 2) +
-                              (request.getPerrosMedianos() * 3) +
-                              (request.getPerrosGrandes() * 4);
+                int totalAlbondigas = (request.getPerrosPequenos() * 2) +
+                                (request.getPerrosMedianos() * 3) +
+                                (request.getPerrosGrandes() * 4);
 
-        // (total_albondigas / 10) * 0.25 kg
-        BigDecimal proteina = BigDecimal.valueOf(totalAlbondigas)
-                .divide(BigDecimal.valueOf(10), 3, RoundingMode.HALF_UP)
-                .multiply(BigDecimal.valueOf(0.25));
+                // (total_albondigas / 10) * 0.25 kg
+                BigDecimal proteina = BigDecimal.valueOf(totalAlbondigas)
+                                .divide(BigDecimal.valueOf(10), 3, RoundingMode.HALF_UP)
+                                .multiply(BigDecimal.valueOf(0.25));
 
-        MenuCanino menuCanino = MenuCanino.builder()
-                .menuEvento(menuEvento)
-                .perrosPequenos(request.getPerrosPequenos())
-                .perrosMedianos(request.getPerrosMedianos())
-                .perrosGrandes(request.getPerrosGrandes())
-                .totalAlbondigas(totalAlbondigas)
-                .gramajeProteinaKg(proteina)
-                .idTipoTorta(request.getIdTipoTorta())
-                .build();
+                MenuCanino menuCanino = MenuCanino.builder()
+                                .menuEvento(menuEvento)
+                                .perrosPequenos(request.getPerrosPequenos())
+                                .perrosMedianos(request.getPerrosMedianos())
+                                .perrosGrandes(request.getPerrosGrandes())
+                                .totalAlbondigas(totalAlbondigas)
+                                .gramajeProteinaKg(proteina)
+                                .idTipoTorta(request.getIdTipoTorta())
+                                .build();
 
-        return menuCaninoRepository.save(menuCanino);
-    }
+                return menuCaninoRepository.save(menuCanino);
+        }
 
-    @Transactional
-    public MenuHumano calcularYGuardarMenuHumano(MenuHumanoRequestDTO request) {
-        MenuEvento menuEvento = obtenerOCrearMenuEvento(request.getIdEvento());
+        @Transactional
+        public MenuHumano calcularYGuardarMenuHumano(MenuHumanoRequestDTO request) {
+                MenuEvento menuEvento = obtenerOCrearMenuEvento(request.getIdEvento());
 
-        int humanos = request.getTotalHumanos();
-        int unidFingerFood = humanos * 3;
-        
-        // unid_finger_food * 0.04 kg
-        BigDecimal kgCarne = BigDecimal.valueOf(unidFingerFood)
-                .multiply(BigDecimal.valueOf(0.04))
-                .setScale(3, RoundingMode.HALF_UP);
+                int humanos = request.getTotalHumanos();
+                int unidFingerFood = humanos * 3;
 
-        int tablasPicoteo = humanos / 10;
-        
-        // humanos * 1.0 L
-        BigDecimal litrosSinAlc = BigDecimal.valueOf(humanos)
-                .setScale(2, RoundingMode.HALF_UP);
+                // unid_finger_food * 0.04 kg
+                BigDecimal kgCarne = BigDecimal.valueOf(unidFingerFood)
+                                .multiply(BigDecimal.valueOf(0.04))
+                                .setScale(3, RoundingMode.HALF_UP);
 
-        int unidConAlc = humanos * 3;
+                int tablasPicoteo = humanos / 10;
 
-        MenuHumano menuHumano = MenuHumano.builder()
-                .menuEvento(menuEvento)
-                .totalHumanos(humanos)
-                .unidFingerFood(unidFingerFood)
-                .kgCarneSliders(kgCarne)
-                .tablasPicoteo(tablasPicoteo)
-                .litrosSinAlc(litrosSinAlc)
-                .unidConAlc(unidConAlc)
-                .build();
+                // humanos * 1.0 L
+                BigDecimal litrosSinAlc = BigDecimal.valueOf(humanos)
+                                .setScale(2, RoundingMode.HALF_UP);
 
-        return menuHumanoRepository.save(menuHumano);
-    }
+                int unidConAlc = humanos * 3;
 
-    private MenuEvento obtenerOCrearMenuEvento(Integer idEvento) {
-        return menuEventoRepository.findByIdEvento(idEvento)
-                .orElseGet(() -> menuEventoRepository.save(
-                        MenuEvento.builder()
-                                .idEvento(idEvento)
-                                .generadoEn(LocalDateTime.now())
-                                .aprobado(false)
-                                .build()
-                ));
-    }
+                MenuHumano menuHumano = MenuHumano.builder()
+                                .menuEvento(menuEvento)
+                                .totalHumanos(humanos)
+                                .unidFingerFood(unidFingerFood)
+                                .kgCarneSliders(kgCarne)
+                                .tablasPicoteo(tablasPicoteo)
+                                .litrosSinAlc(litrosSinAlc)
+                                .unidConAlc(unidConAlc)
+                                .build();
+
+                return menuHumanoRepository.save(menuHumano);
+        }
+
+        private MenuEvento obtenerOCrearMenuEvento(Integer idEvento) {
+                return menuEventoRepository.findByIdEvento(idEvento)
+                                .orElseGet(() -> menuEventoRepository.save(
+                                                MenuEvento.builder()
+                                                                .idEvento(idEvento)
+                                                                .generadoEn(LocalDateTime.now())
+                                                                .aprobado(false)
+                                                                .build()));
+        }
 }
