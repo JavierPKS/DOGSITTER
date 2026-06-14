@@ -7,7 +7,7 @@ import com.catalogo.catalogo.model.TamanoMascota;
 import com.catalogo.catalogo.service.CatalogoService;
 
 @RestController
-@RequestMapping("/api/catalogo/tamanos")
+@RequestMapping("/api/v1/catalogo/tamanos")
 public class TamanoMascotaController {
 
     @Autowired

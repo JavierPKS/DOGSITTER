@@ -7,7 +7,7 @@ import com.catalogo.catalogo.model.Lugar;
 import com.catalogo.catalogo.service.CatalogoService;
 
 @RestController
-@RequestMapping("/api/catalogo/lugares")
+@RequestMapping("/api/v1/catalogo/lugares")
 public class LugarController {
 
     @Autowired

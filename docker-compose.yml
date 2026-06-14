@@ -61,6 +61,106 @@ services:
       - ./ScriptsBD/db_operaciones.sql:/docker-entrypoint-initdb.d/init.sql
     restart: unless-stopped
 
+  # 5. Aplicación: Microservicio de Usuarios (Dev Mode)
+  ms-usuarios:
+    image: eclipse-temurin:21-jdk-alpine
+    container_name: dogsitter-ms-usuarios
+    working_dir: /app
+    volumes:
+      - ./Backend/ms-usuarios:/app
+    command: sh -c "sed -i 's/\r$$//' mvnw && ./mvnw spring-boot:run"
+    environment:
+      - DB_HOST=db-usuarios
+    ports:
+      - "8081:8081"
+    depends_on:
+      - db-usuarios
+    restart: unless-stopped
+
+  # 6. Aplicación: Microservicio de Catálogo (Dev Mode)
+  ms-catalogo:
+    image: eclipse-temurin:21-jdk-alpine
+    container_name: dogsitter-ms-catalogo
+    working_dir: /app
+    volumes:
+      - ./Backend/catalogo:/app
+    command: sh -c "sed -i 's/\r$$//' mvnw && ./mvnw spring-boot:run"
+    environment:
+      - DB_HOST=db-catalogo
+    ports:
+      - "8082:8082"
+    depends_on:
+      - db-catalogo
+    restart: unless-stopped
+
+  # 7. Aplicación: Microservicio de Eventos (Dev Mode)
+  ms-eventos:
+    image: eclipse-temurin:21-jdk-alpine
+    container_name: dogsitter-ms-eventos
+    working_dir: /app
+    volumes:
+      - ./Backend/service-eventos:/app
+    command: sh -c "sed -i 's/\r$$//' mvnw && ./mvnw spring-boot:run"
+    environment:
+      - DB_HOST=db-eventos
+      - MS_USUARIOS_HOST=ms-usuarios
+      - MS_CATALOGO_HOST=ms-catalogo
+    ports:
+      - "8083:8083"
+    depends_on:
+      - db-eventos
+      - ms-usuarios
+      - ms-catalogo
+    restart: unless-stopped
+
+  # 8. Aplicación: Microservicio de Operaciones (Dev Mode)
+  ms-operaciones:
+    image: eclipse-temurin:21-jdk-alpine
+    container_name: dogsitter-ms-operaciones
+    working_dir: /app
+    volumes:
+      - ./Backend/operaciones:/app
+    command: sh -c "sed -i 's/\r$$//' mvnw && ./mvnw spring-boot:run"
+    environment:
+      - DB_HOST=db-operaciones
+    ports:
+      - "8084:8084"
+    depends_on:
+      - db-operaciones
+    restart: unless-stopped
+
+  # 9. API Gateway (Dev Mode)
+  api-gateway:
+    image: eclipse-temurin:21-jdk-alpine
+    container_name: dogsitter-api-gateway
+    working_dir: /app
+    volumes:
+      - ./Backend/gateway:/app
+    command: sh -c "sed -i 's/\r$$//' mvnw && ./mvnw spring-boot:run"
+    environment:
+      - MS_USUARIOS_HOST=ms-usuarios
+      - MS_CATALOGO_HOST=ms-catalogo
+      - MS_EVENTOS_HOST=ms-eventos
+      - MS_OPERACIONES_HOST=ms-operaciones
+    ports:
+      - "9090:9090"
+    depends_on:
+      - ms-usuarios
+      - ms-catalogo
+      - ms-eventos
+      - ms-operaciones
+    restart: unless-stopped
+
+  # 10. Frontend (Dev Mode con Nginx)
+  frontend:
+    image: nginx:alpine
+    container_name: dogsitter-frontend
+    ports:
+      - "80:80"
+    volumes:
+      - ./Frontend:/usr/share/nginx/html:ro
+    restart: unless-stopped
+
 volumes:
   db-usuarios-data:
   db-catalogo-data:

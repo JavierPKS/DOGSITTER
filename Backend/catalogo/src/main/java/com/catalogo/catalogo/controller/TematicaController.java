@@ -7,7 +7,7 @@ import com.catalogo.catalogo.model.Tematica;
 import com.catalogo.catalogo.service.CatalogoService;
 
 @RestController
-@RequestMapping("/api/catalogo/tematicas")
+@RequestMapping("/api/v1/catalogo/tematicas")
 public class TematicaController {
 
     @Autowired
