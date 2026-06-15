@@ -1,0 +1,6 @@
+{
+  "name": "DogSitter",
+  "description": "Portal del cliente, reservación de eventos de catering para mascotas y panel de administración en tiempo real.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
