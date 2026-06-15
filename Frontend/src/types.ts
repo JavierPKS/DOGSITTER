@@ -1,41 +1,59 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
+export interface Ingredient {
+  id: string;
+  name: string;
+  quantity: number;
+  unit: string;
+}
+
+export interface Recipe {
+  id: string;
+  name: string;
+  type: string;
+  status: 'Active' | 'Inactive';
+  description: string;
+  ingredients: Ingredient[];
+}
 
 export interface EventRequest {
   id: string;
-  clientName: string;
-  initials: string;
-  petName: string;
-  petSize: string; // 'peq' | 'med' | 'gde'
-  petBreed?: string;
-  eventDate: string;
-  eventTheme: string; // 'cumpleanos' | 'verano' | 'gala' | 'personalizado'
-  eventLocation: string;
-  dogsSmall: number;
-  dogsMedium: number;
-  dogsLarge: number;
-  humansTotal: number;
-  status: 'Finalizado' | 'En Revisión' | 'Aprobado' | 'Rechazado';
-  createdAt: string;
-}
-
-export interface Staff {
-  id: number;
-  name: string;
-  role: string;
-  initials: string;
-  avatar?: string;
-  status: 'Disponible' | 'Asignado';
-}
-
-export interface ThemePackage {
-  id: string;
   title: string;
-  description: string;
-  price: string;
-  image: string;
-  iconName: string;
-  bulletPoints: string[];
+  status: 'Pending' | 'Approved' | 'Declined';
+  requesterName: string;
+  requesterEmail: string;
+  requesterPhone: string;
+  requesterTier: string;
+  requesterAvatar: string;
+  date: string;
+  time: string;
+  location: string;
+  dogs: number;
+  humans: number;
+  cakeType: string;
+  pupcakes: number;
+  meatballs: number;
+  humanFood: 'finger_food' | 'sliders';
+  includeAlcohol: boolean;
+  specialNotes?: string;
+  dietaryAlerts?: string;
+  venueRequirements?: string;
+  medicalStandby?: boolean;
 }
+
+export interface UserSession {
+  role: 'admin' | 'client';
+  name: string;
+  email: string;
+  phone?: string;
+  avatar?: string;
+}
+
+export interface StaffMember {
+  id: string;
+  name: string;
+  role: 'Coordinador' | 'Chef Repostero' | 'Auxiliar Canino' | 'Soporte Veterinario' | 'Líder Operativo';
+  status: 'Disponible' | 'En Evento' | 'De Licencia' | 'Inactivo';
+  email: string;
+  phone: string;
+  avatarUrl: string;
+}
+

@@ -1,183 +1,139 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
-
-import { EventRequest, Staff, ThemePackage } from './types';
-
-export const CATALOG_THEMES: ThemePackage[] = [
-  {
-    id: 'cumpleanos',
-    title: 'Cumpleaños Perruno',
-    description: 'Una celebración clásica con tarta apta para perros, decoración festiva y juegos interactivos para todos los invitados peludos.',
-    price: 'Desde $150',
-    image: 'https://images.unsplash.com/photo-1535930891776-0c2dfb7fda1a?auto=format&fit=crop&q=80&w=600',
-    iconName: 'cake',
-    bulletPoints: [
-      'Tarta de cumpleaños hipoalergénica',
-      'Gorritos de fiesta personalizados',
-      'Sesión de fotos individual y grupal',
-      'Bolsas de recuerdos para invitados'
-    ]
-  },
-  {
-    id: 'verano',
-    title: 'Fiesta de Verano',
-    description: 'Refréscate con nuestra temática tropical de verano. Incluye mini piscinas de chapoteo, helados artesanales para perros y un menú ligero.',
-    price: 'Desde $200',
-    image: 'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?auto=format&fit=crop&q=80&w=600',
-    iconName: 'sun',
-    bulletPoints: [
-      'Mini piscinas con agua filtrada',
-      'Helados de caldo de hueso y fruta',
-      'Juegos de frisbee y pelotas flotantes',
-      'Zona lounge con sombrillas premium'
-    ]
-  },
-  {
-    id: 'gala',
-    title: 'Gala de Adopción & Bienvenida',
-    description: 'Un evento sofisticado para celebrar la llegada de un nuevo miembro a la familia. Incluye cócteles sin alcohol para humanos y canapés caninos gourmet.',
-    price: 'Desde $250',
-    image: 'https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?auto=format&fit=crop&q=80&w=600',
-    iconName: 'award',
-    bulletPoints: [
-      'Alfombra roja para desfile de mascotas',
-      'Accesorios elegantes (pajaritas, pañuelos)',
-      'Canapés gourmet de salmón y pavo',
-      'Brindis especial con cerveza de perro'
-    ]
-  },
-  {
-    id: 'personalizado',
-    title: 'Celebración Personalizada',
-    description: 'Diseñamos una temática única desde cero según los pasatiempos, juguetes o colores preferidos de tu mejor amigo de cuatro patas.',
-    price: 'Cotización Especial',
-    image: 'https://images.unsplash.com/photo-1516734212186-a967f81ad0d7?auto=format&fit=crop&q=80&w=600',
-    iconName: 'sparkles',
-    bulletPoints: [
-      'Reunión de diseño 1-a-1 con wedding planner de mascotas',
-      'Decoración temática coordinada',
-      'Menú especial para dietas restrictivas',
-      'Regalo exclusivo para el festejado'
-    ]
-  }
-];
+import { EventRequest, Recipe } from './types';
 
 export const INITIAL_REQUESTS: EventRequest[] = [
   {
-    id: 'req-1',
-    clientName: 'María Gómez',
-    initials: 'MG',
-    petName: 'Bella',
-    petSize: 'peq',
-    petBreed: 'Mestizo de Maltés',
-    eventDate: '2023-10-15',
-    eventTheme: 'cumpleanos',
-    eventLocation: 'Jardines del Este',
-    dogsSmall: 5,
-    dogsMedium: 2,
-    dogsLarge: 0,
-    humansTotal: 10,
-    status: 'Finalizado',
-    createdAt: '2023-10-01'
+    id: 'EVT-4829',
+    title: 'Picknic de Puppaccinos en Central Park',
+    status: 'Pending',
+    requesterName: 'Sarah Jenkins',
+    requesterEmail: 'sarah.j@example.com',
+    requesterPhone: '(555) 123-4567',
+    requesterTier: 'Cliente VIP • Nivel Premium',
+    requesterAvatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=200',
+    date: '2024-10-15',
+    time: '10:00',
+    location: 'Central Park, NY',
+    dogs: 30,
+    humans: 45,
+    cakeType: 'peanut_butter',
+    pupcakes: 12,
+    meatballs: 40,
+    humanFood: 'finger_food',
+    includeAlcohol: false,
+    specialNotes: 'Buscamos organizar nuestra reunión de otoño anual para el club local de Golden Retrievers. Necesitamos suficientes áreas de sombra y estaciones de agua. Nos enfocamos en premios orgánicos a base de calabaza para los perros y refrigerios ligeros para los dueños.',
+    dietaryAlerts: '3 perros son alérgicos al pollo; 1 requiere dieta estrictamente libre de granos.',
+    venueRequirements: 'Se requiere perímetro completamente cercado. Acceso a manguera/agua potable.',
+    medicalStandby: true
   },
   {
-    id: 'req-2',
-    clientName: 'Juan Pérez',
-    initials: 'JP',
-    petName: 'Rocky',
-    petSize: 'med',
-    petBreed: 'Bulldog Francés',
-    eventDate: '2023-12-05',
-    eventTheme: 'gala',
-    eventLocation: 'Domicilio Cliente',
-    dogsSmall: 2,
-    dogsMedium: 5,
-    dogsLarge: 1,
-    humansTotal: 15,
-    status: 'En Revisión',
-    createdAt: '2023-11-20'
+    id: 'EVT-4830',
+    title: 'Caminata de Caridad Paws & Pints',
+    status: 'Pending',
+    requesterName: 'Local Brews Co.',
+    requesterEmail: 'events@localbrews.co',
+    requesterPhone: '(555) 678-1234',
+    requesterTier: 'Cliente Comercial • Miembro del Club',
+    requesterAvatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=200',
+    date: '2024-11-02',
+    time: '14:00',
+    location: 'Terraza de Cervecería Local Brews',
+    dogs: 120,
+    humans: 180,
+    cakeType: 'pumpkin_apple',
+    pupcakes: 150,
+    meatballs: 150,
+    humanFood: 'sliders',
+    includeAlcohol: true,
+    specialNotes: 'Gran caminata de recaudación de fondos para el vecindario que termina en nuestra terraza de cerveza apta para mascotas. Necesitamos premios orgánicos deliciosos para las colas felices.',
+    dietaryAlerts: 'Mantener las golosinas libres de maní por seguridad compartida; seleccionar proteínas aptas para alérgicos.',
+    venueRequirements: 'Zona al aire libre segura para perros. Múltiples fuentes de agua.',
+    medicalStandby: true
   },
   {
-    id: 'req-3',
-    clientName: 'Ana López',
-    initials: 'AL',
-    petName: 'Thor',
-    petSize: 'gde',
-    petBreed: 'Golden Retriever',
-    eventDate: '2024-06-25',
-    eventTheme: 'verano',
-    eventLocation: 'Parque de las Esculturas',
-    dogsSmall: 1,
-    dogsMedium: 3,
-    dogsLarge: 8,
-    humansTotal: 25,
-    status: 'Aprobado',
-    createdAt: '2024-06-10'
+    id: 'EVT-4831',
+    title: 'Serie de Talleres de Entrenamiento de Cachorros',
+    status: 'Pending',
+    requesterName: 'David Chen',
+    requesterEmail: 'david.c@example.com',
+    requesterPhone: '(555) 612-4911',
+    requesterTier: 'Miembro de Nivel Premium',
+    requesterAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=200',
+    date: '2024-10-20',
+    time: '11:00',
+    location: 'Gimnasio Cubierto de Westside',
+    dogs: 15,
+    humans: 25,
+    cakeType: 'none',
+    pupcakes: 20,
+    meatballs: 30,
+    humanFood: 'finger_food',
+    includeAlcohol: false,
+    specialNotes: 'Curso de obediencia enfocado en cachorros recién adoptados de menos de 12 meses. Los premios de motivación son fundamentales para mantener la energía de los cachorros.',
+    dietaryAlerts: 'Todos los cachorros requieren estrictamente proteínas deshidratadas de un solo ingrediente de alta calidad.',
+    venueRequirements: 'Pista cerrada de entrenamiento con baldosas de goma antideslizantes.',
+    medicalStandby: false
+  },
+  {
+    id: 'EVT-4832',
+    title: 'Día de Terapia con Mascotas Corporativa',
+    status: 'Pending',
+    requesterName: 'Recursos Humanos Intercorp',
+    requesterEmail: 'wellbeing@intercorp.org',
+    requesterPhone: '(555) 231-5582',
+    requesterTier: 'Socio VIP Corporativo',
+    requesterAvatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=200',
+    date: '2025-06-22',
+    time: '13:00',
+    location: 'Patio Central de Intercorp',
+    dogs: 12,
+    humans: 80,
+    cakeType: 'beef_liver',
+    pupcakes: 24,
+    meatballs: 40,
+    humanFood: 'sliders',
+    includeAlcohol: false,
+    specialNotes: 'Evento de bienestar para empleados donde traerán perros de terapia personales al patio de la empresa. Requiere una revisión inmediata ya que las aprobaciones corporativas toman tiempo.',
+    dietaryAlerts: 'Se prefieren golosinas a base de res y libres de gluten.',
+    venueRequirements: 'Cercado temporal de doble puerta, áreas con cenadores sombreados.',
+    medicalStandby: true
   }
 ];
 
-export const INITIAL_STAFF: Staff[] = [
+export const INITIAL_RECIPES: Recipe[] = [
   {
-    id: 1,
-    name: 'Roberto C.',
-    role: 'Especialista razas grandes',
-    initials: 'RC',
-    avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
-    status: 'Disponible'
+    id: 'REC-2049',
+    name: 'Cupcake de Salmón',
+    type: 'Pesquetariano',
+    status: 'Active',
+    description: 'Una receta base balanceada e hipoalergénica adecuada para estómagos sensibles. Utilizada como base para menús de eventos pesquetarianos.',
+    ingredients: [
+      { id: '1', name: 'Salmón Salvaje de Alaska', quantity: 450, unit: 'g' },
+      { id: '2', name: 'Puré de Camote', quantity: 200, unit: 'g' },
+      { id: '3', name: 'Harina de Coco', quantity: 50, unit: 'g' }
+    ]
   },
   {
-    id: 2,
-    name: 'Sofía V.',
-    role: 'Cuidados médicos & Nutrición',
-    initials: 'SV',
-    avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
-    status: 'Disponible'
+    id: 'REC-2050',
+    name: 'Albóndigas de Res',
+    type: 'Alto en Proteína',
+    status: 'Active',
+    description: 'Sabrosas albóndigas hechas con carne de res molida magra orgánica de alta calidad, mezcladas con harina de avena y perejil para un aliento fresco.',
+    ingredients: [
+      { id: '1', name: 'Carne de Res Molida Premium', quantity: 600, unit: 'g' },
+      { id: '2', name: 'Harina de Avena Orgánica', quantity: 150, unit: 'g' },
+      { id: '3', name: 'Perejil Picado', quantity: 30, unit: 'g' }
+    ]
   },
   {
-    id: 3,
-    name: 'Diego M.',
-    role: 'Handler de eventos & Animador',
-    initials: 'DM',
-    avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
-    status: 'Disponible'
-  },
-  {
-    id: 4,
-    name: 'Camila F.',
-    role: 'Fotógrafa & Diseñadora de set',
-    initials: 'CF',
-    avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
-    status: 'Disponible'
+    id: 'REC-2051',
+    name: 'Tazón de Pavo y Quinoa',
+    type: 'Balanceado',
+    status: 'Active',
+    description: 'Una comida completa llena de energía que presenta pechuga de pavo desmenuzada (alternativa segura al pollo propenso a alergias) mezclada con quinoa orgánica y vegetales vibrantes.',
+    ingredients: [
+      { id: '1', name: 'Pavo Desmechado Apto para Alérgicos', quantity: 500, unit: 'g' },
+      { id: '2', name: 'Quinoa Blanca Orgánica', quantity: 300, unit: 'g' },
+      { id: '3', name: 'Zanahorias y Guisantes Orgánicos en Cubitos', quantity: 120, unit: 'g' }
+    ]
   }
 ];
-
-// LocalStorage helpers to simulate database operations in a single page application
-export function getStoredRequests(): EventRequest[] {
-  if (typeof window === 'undefined') return INITIAL_REQUESTS;
-  const data = localStorage.getItem('dogsitter_event_requests');
-  if (!data) {
-    localStorage.setItem('dogsitter_event_requests', JSON.stringify(INITIAL_REQUESTS));
-    return INITIAL_REQUESTS;
-  }
-  return JSON.parse(data);
-}
-
-export function saveStoredRequests(requests: EventRequest[]) {
-  localStorage.setItem('dogsitter_event_requests', JSON.stringify(requests));
-}
-
-export function getStoredStaff(): Staff[] {
-  if (typeof window === 'undefined') return INITIAL_STAFF;
-  const data = localStorage.getItem('dogsitter_staff');
-  if (!data) {
-    localStorage.setItem('dogsitter_staff', JSON.stringify(INITIAL_STAFF));
-    return INITIAL_STAFF;
-  }
-  return JSON.parse(data);
-}
-
-export function saveStoredStaff(staff: Staff[]) {
-  localStorage.setItem('dogsitter_staff', JSON.stringify(staff));
-}

@@ -1,6 +1,6 @@
 {
   "name": "DogSitter",
-  "description": "Portal del cliente, reservación de eventos de catering para mascotas y panel de administración en tiempo real.",
+  "description": "Premium dog banquet booking portal and administrator coordination panel, featuring multi-step request wizards, unified pending inboxes and a molecular gastronomic BOM recipe config matrix.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }
