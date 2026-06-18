@@ -15,17 +15,18 @@ export function calculateStaffNeeds(dogs: number, humans: number, medicalStandby
   const finalDogs = dogs || 0;
   const finalHumans = humans || 0;
 
-  // 1 Coordinator per 30 dogs, min 1
-  const coordinators = Math.max(1, Math.ceil(finalDogs / 30));
+  // 1 Coordinator (colaborador) per 10 dogs (1 to 10 -> 1, 11 to 20 -> 2, etc.)
+  const coordinators = finalDogs > 0 ? Math.ceil(finalDogs / 10) : 1;
   
-  // 1 Pastry Chef per 45 total guests (dogs + humans), min 1
-  const chefs = Math.max(1, Math.ceil((finalDogs + finalHumans) / 45));
+  // Pastry Chefs based on sum of dogs + humans (1 to 8 -> 1, 9 to 16 -> 2, etc.)
+  const totalSum = finalDogs + finalHumans;
+  const chefs = totalSum > 0 ? Math.ceil(totalSum / 8) : 1;
   
-  // 1 Canine Assistant per 10 dogs, min 1 
-  const helpers = Math.max(1, Math.ceil(finalDogs / 10));
+  // Canine assistants: increase by 1 every 5 dogs (1 to 5 -> 1, 6 to 10 -> 2, etc.)
+  const helpers = finalDogs > 0 ? Math.ceil(finalDogs / 5) : 0;
   
-  // 1 Veterinary Support if medical standby is selected or the canine cohort exceeds 20 pets
-  const vets = (medicalStandby || finalDogs >= 20) ? 1 : 0;
+  // Veterinarians: same logic but every 5 dogs (1 to 5 -> 1, 6 to 10 -> 2, etc.)
+  const vets = finalDogs > 0 ? Math.ceil(finalDogs / 5) : 0;
 
   return {
     coordinators,

@@ -76,7 +76,7 @@ export default function ClientDashboard({ requests, userSession, onOpenBooking }
         <section className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-outline-variant/30 pb-6">
           <div>
             <div className="flex items-center gap-2 text-primary font-bold text-sm uppercase tracking-wider mb-1">
-              <Sparkles className="w-4 h-4" /> Gabinete de Miembro VIP
+              <Sparkles className="w-4 h-4" /> Panel del Cliente
             </div>
             <h1 className="text-3xl font-display font-extrabold tracking-tight text-on-surface">
               ¡Hola de nuevo, {userSession.name}!
@@ -251,7 +251,7 @@ export default function ClientDashboard({ requests, userSession, onOpenBooking }
             
             <div className="glass-card rounded-2xl p-5 border border-outline-variant/30 bg-surface-container-lowest space-y-4">
               <h3 className="font-display font-bold text-on-surface border-b border-outline-variant/20 pb-2 text-sm flex items-center gap-2">
-                <Users className="w-4 h-4 text-primary" /> Membresía VIP Premium
+                <Users className="w-4 h-4 text-primary" /> Perfil del Cliente
               </h3>
               
               <div className="flex items-center gap-3">
@@ -260,16 +260,16 @@ export default function ClientDashboard({ requests, userSession, onOpenBooking }
                 </div>
                 <div>
                   <h4 className="text-xs font-bold text-on-surface">{userSession.name}</h4>
-                  <span className="text-[10px] text-primary font-extrabold uppercase">Miembro VIP Elite</span>
+                  <span className="text-[10px] text-primary font-extrabold uppercase">Cliente DogSitter</span>
                 </div>
               </div>
 
               <div className="bg-surface-container/30 border border-outline-variant/20 rounded-xl p-3 space-y-2 text-xs">
                 <p className="text-on-surface-variant font-medium leading-relaxed">
-                  Como miembro de nivel corporativo/VIP de DogSitter, gozas de acompañamiento veterinario preferente libre de costo adicional en eventos con más de 20 canes.
+                  Como cliente de DogSitter, gozas de acompañamiento veterinario preferente libre de costo adicional en eventos con más de 20 canes.
                 </p>
                 <p className="text-primary font-bold">
-                  Soporte Telefónico VIP 24/7 disponible.
+                  Soporte de consulta telefónica 24/7 disponible.
                 </p>
               </div>
             </div>

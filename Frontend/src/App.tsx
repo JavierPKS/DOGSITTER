@@ -8,7 +8,8 @@ import {
   Clock,
   Sparkles,
   Users,
-  LogOut
+  LogOut,
+  CheckCircle
 } from 'lucide-react';
 import { EventRequest, Recipe, UserSession } from './types';
 import { INITIAL_REQUESTS, INITIAL_RECIPES } from './data';
@@ -21,15 +22,19 @@ import ScheduleView from './components/ScheduleView';
 import LoginScreen from './components/LoginScreen';
 import StaffManagement from './components/StaffManagement';
 import ClientDashboard from './components/ClientDashboard';
+import LandingPage from './components/LandingPage';
+import ApprovedEvents from './components/ApprovedEvents';
 
 export default function App() {
   // Global Application State stored safely
   const [requests, setRequests] = useState<EventRequest[]>([]);
+  const [showLogin, setShowLogin] = useState<boolean>(false);
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [userSession, setUserSession] = useState<UserSession | null>(null);
   
   // Navigation State
   const [currentView, setCurrentView] = useState<string>('inbox');
+  const [lastView, setLastView] = useState<string>('inbox');
   const [selectedRequest, setSelectedRequest] = useState<EventRequest | null>(null);
 
   // Initialize state with preloaded mockup data
@@ -82,7 +87,7 @@ export default function App() {
       id,
       status: 'Pending',
       requesterAvatar: `https://api.dicebear.com/7.x/adventurer/svg?seed=${newReq.requesterName}`,
-      requesterTier: 'Cliente VIP • Nivel Premium'
+      requesterTier: 'Cliente'
     };
 
     const updated = [fullRequest, ...requests];
@@ -133,9 +138,16 @@ export default function App() {
     saveRecipes(updated);
   };
 
+  // Recipe deleting
+  const handleDeleteRecipe = (idToDelete: string) => {
+    const updated = recipes.filter(r => r.id !== idToDelete);
+    saveRecipes(updated);
+  };
+
   // Helper selectors
   const handleSelectRequestToReview = (req: EventRequest) => {
     setSelectedRequest(req);
+    setLastView(currentView);
     setCurrentView('detail');
   };
 
@@ -147,12 +159,28 @@ export default function App() {
 
   const handleLogout = () => {
     setUserSession(null);
+    setShowLogin(false);
     localStorage.removeItem('dogsitter_user_session');
   };
 
-  // Login Gate
+  // Login Gate & Landing Intermediary
   if (userSession === null) {
-    return <LoginScreen onLogin={handleLogin} />;
+    if (showLogin) {
+      return (
+        <div className="relative min-h-screen flex flex-col justify-center bg-surface">
+          <div className="absolute top-4 left-6 z-50">
+            <button 
+              onClick={() => setShowLogin(false)}
+              className="px-4 py-2 text-xs font-bold text-primary bg-primary/10 border border-primary/20 rounded-xl hover:bg-primary-container hover:text-on-primary-container transition-all cursor-pointer flex items-center gap-1"
+            >
+              ← Volver al Inicio
+            </button>
+          </div>
+          <LoginScreen onLogin={handleLogin} />
+        </div>
+      );
+    }
+    return <LandingPage onEnter={() => setShowLogin(true)} />;
   }
 
   return (
@@ -167,7 +195,7 @@ export default function App() {
           <span className={`text-[9px] font-bold uppercase px-2 py-0.5 rounded-full ml-1 ${
             userSession.role === 'admin' ? 'bg-primary-container text-primary' : 'bg-tertiary-fixed text-on-tertiary-container'
           }`}>
-            {userSession.role === 'admin' ? 'Coordinador' : 'Cliente VIP'}
+            {userSession.role === 'admin' ? 'Coordinador' : 'Cliente'}
           </span>
         </div>
 
@@ -179,12 +207,24 @@ export default function App() {
                 type="button"
                 onClick={() => setCurrentView('inbox')}
                 className={`px-3 py-2 rounded-full transition-all flex items-center gap-1 cursor-pointer ${
-                  currentView === 'inbox' || currentView === 'detail'
+                  currentView === 'inbox'
                     ? 'bg-primary-fixed text-primary font-bold shadow-sm'
                     : 'text-on-surface-variant hover:text-primary hover:bg-surface-container-high'
                 }`}
               >
                 <Inbox className="w-3.5 h-3.5" /> Bandeja
+              </button>
+
+              <button 
+                type="button"
+                onClick={() => setCurrentView('approved_events')}
+                className={`px-3 py-2 rounded-full transition-all flex items-center gap-1 cursor-pointer ${
+                  currentView === 'approved_events'
+                    ? 'bg-primary-fixed text-primary font-bold shadow-sm'
+                    : 'text-on-surface-variant hover:text-primary hover:bg-surface-container-high'
+                }`}
+              >
+                <CheckCircle className="w-3.5 h-3.5" /> Aprobados
               </button>
 
               <button 
@@ -256,7 +296,7 @@ export default function App() {
         <div className="flex items-center gap-3">
           <div className="hidden md:block text-right">
             <span className="text-xs font-bold text-on-surface block leading-none">{userSession.name}</span>
-            <span className="text-[10px] text-primary/70 font-semibold">{userSession.role === 'admin' ? 'Elena Gómez (Líder)' : 'Cliente VIP'}</span>
+            <span className="text-[10px] text-primary/70 font-semibold">{userSession.role === 'admin' ? 'Elena Gómez (Líder)' : 'Cliente'}</span>
           </div>
           
           <div className="w-8 h-8 rounded-full overflow-hidden bg-surface-container-high border border-outline-variant/40 shrink-0">
@@ -287,6 +327,7 @@ export default function App() {
 
         {currentView === 'booking' && (
           <ClientForm 
+            recipes={recipes}
             onSubmit={(newReq) => {
               handleCreateRequest(newReq);
               setCurrentView(userSession.role === 'admin' ? 'inbox' : 'client_home');
@@ -320,9 +361,18 @@ export default function App() {
         {currentView === 'detail' && selectedRequest && (
           <AdminDetail 
             request={selectedRequest}
-            onGoBack={() => setCurrentView('inbox')}
+            recipes={recipes}
+            onGoBack={() => setCurrentView(lastView)}
             onApproveEvent={handleApproveEvent}
             onRejectEvent={handleDeclineRequest}
+          />
+        )}
+
+        {currentView === 'approved_events' && (
+          <ApprovedEvents
+            requests={requests}
+            onSelectRequest={handleSelectRequestToReview}
+            onGoBack={() => setCurrentView('inbox')}
           />
         )}
 
@@ -330,6 +380,7 @@ export default function App() {
           <RecipeManagement 
             recipes={recipes}
             onSaveRecipe={handleSaveRecipe}
+            onDeleteRecipe={handleDeleteRecipe}
             onGoBack={() => setCurrentView('inbox')}
           />
         )}

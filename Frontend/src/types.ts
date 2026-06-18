@@ -31,12 +31,17 @@ export interface EventRequest {
   cakeType: string;
   pupcakes: number;
   meatballs: number;
-  humanFood: 'finger_food' | 'sliders';
+  humanFood: string;
   includeAlcohol: boolean;
+  dogSize?: 'small' | 'medium' | 'large';
+  smallDogs?: number;
+  mediumDogs?: number;
+  largeDogs?: number;
   specialNotes?: string;
   dietaryAlerts?: string;
   venueRequirements?: string;
   medicalStandby?: boolean;
+  selectedRecipeIds?: string[];
 }
 
 export interface UserSession {

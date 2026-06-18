@@ -40,6 +40,51 @@ export default function StaffManagement({ requests, onGoBack }: StaffManagementP
   const [newPhone, setNewPhone] = useState('');
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
+  // New assignment states
+  const [assignments, setAssignments] = useState<Record<string, string[]>>(() => {
+    const saved = localStorage.getItem('dogsitter_event_staff_assignments');
+    return saved ? JSON.parse(saved) : {};
+  });
+  const [expandedEventId, setExpandedEventId] = useState<string | null>(null);
+
+  const saveAssignments = (newAssignments: Record<string, string[]>) => {
+    setAssignments(newAssignments);
+    localStorage.setItem('dogsitter_event_staff_assignments', JSON.stringify(newAssignments));
+  };
+
+  const toggleStaffAssignment = (eventId: string, staffId: string) => {
+    const eventAssignments = assignments[eventId] || [];
+    let updatedList: string[];
+    
+    if (eventAssignments.includes(staffId)) {
+      updatedList = eventAssignments.filter(id => id !== staffId);
+    } else {
+      updatedList = [...eventAssignments, staffId];
+    }
+    
+    const newAssignments = {
+      ...assignments,
+      [eventId]: updatedList
+    };
+    saveAssignments(newAssignments);
+
+    // Update staff members' status automatically
+    const updatedStaff = staff.map(member => {
+      if (member.id === staffId) {
+        const isAssignedAnywhere = Object.entries(newAssignments).some(([evtId, staffIds]) => {
+          const evt = requests.find(r => r.id === evtId);
+          return (evt?.status === 'Approved' || evt?.status === 'Pending') && (staffIds as string[]).includes(member.id);
+        });
+        return {
+          ...member,
+          status: isAssignedAnywhere ? ('En Evento' as const) : ('Disponible' as const)
+        };
+      }
+      return member;
+    });
+    saveStaff(updatedStaff);
+  };
+
   useEffect(() => {
     const saved = localStorage.getItem('dogsitter_staff');
     if (saved) {
@@ -272,63 +317,188 @@ export default function StaffManagement({ requests, onGoBack }: StaffManagementP
         {/* INTERACTIVE AUTOMATED MATRIX SECTION */}
         <section className="mb-10 bg-primary/5 rounded-3xl p-6 border border-primary/10">
           <h2 className="text-lg font-display font-bold text-primary flex items-center gap-2 mb-2">
-            <Award className="w-5 h-5" /> Matriz Operativa & Dotación Automática Sugerida (IA-Calculated)
+            <Award className="w-5 h-5" /> Matriz Operativa & Dotación de Personal por Evento
           </h2>
           <p className="text-xs text-on-surface-variant mb-6 leading-relaxed">
-            DogSitter evalúa cada banquete aprobado de acuerdo a la escala física (Perros y Personas) y opcionalidad de soporte de primeros auxilios. La IA distribuye automáticamente cuántos profesionales mínimos son sugeribles por seguridad y rendimiento culinario.
+            DogSitter calcula y distribuye de forma exacta los requerimientos de personal para garantizar la seguridad de tus mascotas y la excelencia gastronómica canina gourmet.
           </p>
 
           <div className="space-y-4">
             {requests.filter(r => r.status === 'Approved' || r.status === 'Pending').map(req => {
               const needs = calculateStaffNeeds(req.dogs, req.humans, !!req.medicalStandby);
+              
+              const eventAssignments = assignments[req.id] || [];
+              const assignedStaffForEvent = staff.filter(member => eventAssignments.includes(member.id));
+              const unassignedStaffForEvent = staff.filter(member => !eventAssignments.includes(member.id));
+
+              const currentCounts = {
+                coordinators: assignedStaffForEvent.filter(m => m.role === 'Coordinador').length,
+                chefs: assignedStaffForEvent.filter(m => m.role === 'Chef Repostero').length,
+                helpers: assignedStaffForEvent.filter(m => m.role === 'Auxiliar Canino').length,
+                vets: assignedStaffForEvent.filter(m => m.role === 'Soporte Veterinario').length,
+              };
+
+              const isExpanded = expandedEventId === req.id;
+
               return (
                 <div 
                   key={req.id} 
-                  className="bg-surface-container-lowest p-5 rounded-2xl border border-outline-variant/20 flex flex-col md:flex-row justify-between items-start md:items-center gap-4"
+                  className="bg-surface-container-lowest p-5 rounded-2xl border border-outline-variant/20 flex flex-col gap-4"
                 >
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="bg-primary-container/20 text-primary text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase">
-                        {req.id}
-                      </span>
-                      <span className="text-on-surface font-bold text-sm">
-                        {req.title}
-                      </span>
+                  <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="bg-primary-container/20 text-primary text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase">
+                          {req.id}
+                        </span>
+                        <span className="text-on-surface font-bold text-sm">
+                          {req.title}
+                        </span>
+                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
+                          req.status === 'Approved' ? 'bg-success/10 text-success' : 'bg-warning/10 text-warning'
+                        }`}>
+                          {req.status === 'Approved' ? 'Aprobado' : 'Pendiente'}
+                        </span>
+                      </div>
+                      <p className="text-xs text-on-surface-variant font-medium">
+                        Escala del Banquete: <strong className="text-on-surface font-bold">{req.dogs} Perros</strong> y <strong className="text-on-surface font-semibold">{req.humans} Humanos</strong> • Fecha: {req.date}
+                      </p>
                     </div>
-                    <p className="text-xs text-on-surface-variant font-medium">
-                      Escala del Banquete: <strong className="text-on-surface font-bold">{req.dogs} Perros</strong> y <strong className="text-on-surface font-semibold">{req.humans} Humanos</strong> • Fecha: {req.date}
-                    </p>
+
+                    {/* Dynamic allocation checklist */}
+                    <div className="flex flex-wrap gap-2 items-center">
+                      <div className="bg-surface-container-low px-3 py-2 rounded-xl text-center border border-outline-variant/10">
+                        <span className="text-[10px] text-on-surface-variant font-bold uppercase block">Coordinadores</span>
+                        <span className="text-xs font-bold text-primary">
+                          {currentCounts.coordinators} / {needs.coordinators}
+                        </span>
+                      </div>
+                      
+                      <div className="bg-surface-container-low px-3 py-2 rounded-xl text-center border border-outline-variant/10">
+                        <span className="text-[10px] text-on-surface-variant font-bold uppercase block">Chef Repostero</span>
+                        <span className="text-xs font-bold text-secondary">
+                          {currentCounts.chefs} / {needs.chefs}
+                        </span>
+                      </div>
+
+                      <div className="bg-surface-container-low px-3 py-2 rounded-xl text-center border border-outline-variant/10">
+                        <span className="text-[10px] text-on-surface-variant font-bold uppercase block">Auxiliares</span>
+                        <span className="text-xs font-bold text-tertiary">
+                          {currentCounts.helpers} / {needs.helpers}
+                        </span>
+                      </div>
+
+                      <div className="bg-surface-container-low px-3 py-2 rounded-xl text-center border border-outline-variant/10">
+                        <span className="text-[10px] text-on-surface-variant font-bold uppercase block">Veterinario</span>
+                        <span className={`text-xs font-bold ${needs.vets > 0 ? 'text-error font-extrabold' : 'text-on-surface-variant/40'}`}>
+                          {currentCounts.vets} / {needs.vets}
+                        </span>
+                      </div>
+
+                      <button
+                        onClick={() => setExpandedEventId(isExpanded ? null : req.id)}
+                        className={`px-4 py-2.5 rounded-xl font-bold text-xs shrink-0 cursor-pointer transition-all flex items-center gap-1.5 ${
+                          isExpanded 
+                            ? 'bg-primary text-white shadow' 
+                            : 'bg-primary/10 text-primary hover:bg-primary/20 border border-primary/20'
+                        }`}
+                      >
+                        <UserCheck className="w-4 h-4" />
+                        <span>{isExpanded ? 'Ocultar Organizador' : 'Asignar Personal'}</span>
+                      </button>
+                    </div>
                   </div>
 
-                  {/* Dynamic allocation checklist */}
-                  <div className="flex flex-wrap gap-2 items-center">
-                    <div className="bg-surface-container-low px-3 py-2 rounded-xl text-center border border-outline-variant/10">
-                      <span className="text-[10px] text-on-surface-variant font-bold uppercase block">Coordinadores</span>
-                      <span className="text-xs font-bold text-primary">{needs.coordinators} {needs.coordinators > 1 ? 'Reqs' : 'Req'}</span>
-                    </div>
-                    
-                    <div className="bg-surface-container-low px-3 py-2 rounded-xl text-center border border-outline-variant/10">
-                      <span className="text-[10px] text-on-surface-variant font-bold uppercase block">Chef Repostero</span>
-                      <span className="text-xs font-bold text-secondary">{needs.chefs} {needs.chefs > 1 ? 'Reqs' : 'Req'}</span>
-                    </div>
+                  {/* Expandable Collaborator Assignment Panel */}
+                  {isExpanded && (
+                    <div className="p-4 bg-surface-container-low rounded-xl border border-outline-variant/30 space-y-4 animate-fade-in text-left">
+                      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-outline-variant/20 pb-2">
+                        <h3 className="text-xs font-black text-primary uppercase tracking-widest flex items-center gap-1.5">
+                          <span>Asignación de Personal para {req.id}</span>
+                        </h3>
+                        <p className="text-[11px] text-on-surface-variant">
+                          Total Requerido: <strong className="text-on-surface">{needs.total} Profesionales</strong>
+                        </p>
+                      </div>
 
-                    <div className="bg-surface-container-low px-3 py-2 rounded-xl text-center border border-outline-variant/10">
-                      <span className="text-[10px] text-on-surface-variant font-bold uppercase block">Auxiliares</span>
-                      <span className="text-xs font-bold text-tertiary">{needs.helpers} {needs.helpers > 1 ? 'Reqs' : 'Req'}</span>
-                    </div>
+                      {/* Assignment grid: displays role categories and who is assigned to each */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {/* List of currently assigned staff to this event */}
+                        <div className="bg-surface-container-lowest p-4 rounded-xl border border-outline-variant/15 space-y-3">
+                          <h4 className="text-xs font-bold text-on-surface flex items-center gap-1">
+                            <CheckCircle className="w-4 h-4 text-primary" /> Colaboradores Asignados ({assignedStaffForEvent.length})
+                          </h4>
+                          {assignedStaffForEvent.length === 0 ? (
+                            <p className="text-[11px] text-on-surface-variant italic py-2">Ningún colaborador asignado aún para este evento.</p>
+                          ) : (
+                            <div className="divide-y divide-outline-variant/10">
+                              {assignedStaffForEvent.map(member => (
+                                <div key={member.id} className="py-2 flex items-center justify-between gap-2">
+                                  <div className="flex items-center gap-2">
+                                    <img src={member.avatarUrl} className="w-7 h-7 rounded-full object-cover border border-outline" referrerPolicy="no-referrer" />
+                                    <div>
+                                      <p className="text-xs font-bold leading-tight">{member.name}</p>
+                                      <p className="text-[10px] text-primary font-medium">{member.role}</p>
+                                    </div>
+                                  </div>
+                                  <button
+                                    onClick={() => toggleStaffAssignment(req.id, member.id)}
+                                    className="px-2.5 py-1 bg-red-50 hover:bg-red-100 text-red-900 border border-red-200 text-[10px] font-bold rounded-lg cursor-pointer transition-all"
+                                  >
+                                    Remover
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
 
-                    <div className="bg-surface-container-low px-3 py-2 rounded-xl text-center border border-outline-variant/10">
-                      <span className="text-[10px] text-on-surface-variant font-bold uppercase block">Veterinario</span>
-                      <span className={`text-xs font-bold ${needs.vets > 0 ? 'text-error font-extrabold' : 'text-on-surface-variant/40'}`}>
-                        {needs.vets > 0 ? '1 ALTA PRIO' : 'No requir.'}
-                      </span>
-                    </div>
+                        {/* Roster of available/applicable staff to assign */}
+                        <div className="bg-surface-container-lowest p-4 rounded-xl border border-outline-variant/15 space-y-3">
+                          <h4 className="text-xs font-bold text-on-surface">Disponible para Asignar ({unassignedStaffForEvent.length})</h4>
+                          {unassignedStaffForEvent.length === 0 ? (
+                            <p className="text-[11px] text-on-surface-variant italic py-2">No hay más colaboradores en el registro de la agencia.</p>
+                          ) : (
+                            <div className="max-h-48 overflow-y-auto divide-y divide-outline-variant/10 pr-1">
+                              {unassignedStaffForEvent.map(member => {
+                                // Match if this member fits under the event requirements
+                                const isNeededRole = 
+                                  (member.role === 'Coordinador' && needs.coordinators > currentCounts.coordinators) ||
+                                  (member.role === 'Chef Repostero' && needs.chefs > currentCounts.chefs) ||
+                                  (member.role === 'Auxiliar Canino' && needs.helpers > currentCounts.helpers) ||
+                                  (member.role === 'Soporte Veterinario' && needs.vets > currentCounts.vets);
 
-                    <div className="bg-primary text-white px-4 py-2.5 rounded-xl font-bold text-xs shrink-0 text-center shadow-sm">
-                      <span className="text-[9px] text-white/70 block uppercase">Total Personal</span>
-                      <span>{needs.total} Profesionales</span>
+                                return (
+                                  <div key={member.id} className="py-2 flex items-center justify-between gap-2">
+                                    <div className="flex items-center gap-2">
+                                      <img src={member.avatarUrl} className="w-7 h-7 rounded-full object-cover border border-outline" referrerPolicy="no-referrer" />
+                                      <div>
+                                        <p className="text-xs font-bold leading-tight flex items-center gap-1.5 flex-wrap">
+                                          <span>{member.name}</span>
+                                          {isNeededRole && (
+                                            <span className="text-[8px] bg-primary-container text-primary border border-primary/20 px-1 rounded uppercase font-black">
+                                              Requerido
+                                            </span>
+                                          )}
+                                        </p>
+                                        <p className="text-[10px] text-on-surface-variant font-medium">{member.role} • {member.status}</p>
+                                      </div>
+                                    </div>
+                                    <button
+                                      onClick={() => toggleStaffAssignment(req.id, member.id)}
+                                      className="px-2.5 py-1 bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 text-[10px] font-bold rounded-lg cursor-pointer transition-all"
+                                    >
+                                      Asignar
+                                    </button>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               );
             })}

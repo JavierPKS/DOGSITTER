@@ -71,116 +71,51 @@ export default function AdminInbox({
   };
 
   return (
-    <div className="flex min-h-[calc(100vh-4rem)] bg-surface text-on-surface">
+    <div className="flex min-h-[calc(100vh-4rem)] bg-surface text-on-surface w-full">
       
-      {/* SideNavBar Column - Persistent on desktop, matching brand requirements */}
-      <aside className="w-[280px] bg-inverse-surface text-white p-6 shrink-0 hidden lg:flex flex-col justify-between">
-        <div className="space-y-6">
-          {/* Brand header */}
-          <div className="flex items-center gap-3 border-b border-outline/20 pb-4">
-            <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
-              <PawPrint className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <h2 className="text-lg font-display font-bold leading-tight">Admin</h2>
-              <p className="text-xs text-outline-variant">Coordinador de Eventos</p>
-            </div>
-          </div>
-
-          <button 
-            onClick={onOpenBooking}
-            className="w-full bg-primary hover:bg-primary-container text-white py-3 px-4 rounded-xl font-bold text-sm shadow transition-all flex items-center justify-center gap-2 active:scale-95 duration-100 cursor-pointer"
-          >
-            <Plus className="w-4 h-4" /> Registrar Evento
-          </button>
-
-          {/* Nav Items */}
-          <nav className="space-y-1.5 pt-2">
-            <button className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-surface-container-highest hover:bg-white/5 hover:text-white transition-colors text-left text-sm font-semibold cursor-pointer">
-              <LayoutDashboard className="w-4 h-4 text-outline-variant" />
-              Panel de Control
-            </button>
-            <button className="w-full flex items-center justify-between px-4 py-3 rounded-lg border-l-4 border-primary bg-primary-container/10 text-primary font-bold text-left text-sm cursor-pointer">
-              <span className="flex items-center gap-3">
-                <Calendar className="w-4 h-4 text-primary" />
-                Eventos
-              </span>
-              <span className="bg-primary text-white text-xs font-bold px-2 py-0.5 rounded-full">{pendingCount}</span>
-            </button>
-            <button 
-              onClick={onSelectSchedules}
-              className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-surface-container-highest hover:bg-white/5 hover:text-white transition-colors text-left text-sm font-semibold cursor-pointer"
-            >
-              <Clock className="w-4 h-4 text-outline-variant" />
-              Horarios
-            </button>
-            <button 
-              onClick={onSelectRecipes}
-              className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-surface-container-highest hover:bg-white/5 hover:text-white transition-colors text-left text-sm font-semibold cursor-pointer"
-            >
-              <Settings className="w-4 h-4 text-outline-variant" />
-              Parámetros de Recetas
-            </button>
-            {onSelectStaff && (
-              <button 
-                onClick={onSelectStaff}
-                className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-surface-container-highest hover:bg-white/5 hover:text-white transition-colors text-left text-sm font-semibold cursor-pointer"
-              >
-                <Users className="w-4 h-4 text-outline-variant" />
-                Administración de Staff
-              </button>
-            )}
-          </nav>
-        </div>
-
-        {/* Footer items */}
-        <div className="border-t border-outline/20 pt-4 space-y-1">
-          <button className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-surface-container-highest hover:bg-white/5 hover:text-white transition-all text-left text-xs font-bold cursor-pointer">
-            <HelpCircle className="w-4 h-4 text-outline-variant" />
-            Soporte Técnico
-          </button>
-          <button className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-surface-container-highest hover:bg-white/5 hover:text-white transition-all text-left text-xs font-bold cursor-pointer">
-            <LogOut className="w-4 h-4 text-outline-variant" />
-            Cerrar Sesión
-          </button>
-        </div>
-      </aside>
-
       {/* Main Content Area */}
       <main className="flex-1 p-6 md:p-8 overflow-y-auto">
-        <header className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 mb-8">
+        <header className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 mb-6">
           <div>
             <h1 className="text-3xl font-display font-bold tracking-tight text-on-surface">Bandeja de Entrada</h1>
             <p className="text-sm text-on-surface-variant">Revisa y precalcula los materiales para solicitudes pendientes de tus clientes.</p>
           </div>
 
-          {/* Search and Filters bar */}
-          <div className="flex flex-col sm:flex-row gap-3 w-full xl:w-auto">
-            <div className="relative w-full sm:w-64">
-              <Search className="w-4 h-4 text-outline absolute left-3 top-1/2 -translate-y-1/2" />
-              <input 
-                type="text" 
-                placeholder="Buscar solicitud..." 
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-9 pr-4 py-2 text-sm bg-surface-container-lowest border border-outline-variant rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all shadow-sm shadow-black/5"
-              />
-            </div>
-            <div className="relative w-full sm:w-48">
-              <Filter className="w-4 h-4 text-outline absolute left-3 top-1/2 -translate-y-1/2" />
-              <select 
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value as any)}
-                className="w-full pl-9 pr-8 py-2 text-sm bg-surface-container-lowest border border-outline-variant rounded-xl appearance-none focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all shadow-sm"
-              >
-                <option value="All">Todos los Estados</option>
-                <option value="Pending">Pendientes</option>
-                <option value="Approved">Aprobados</option>
-                <option value="Declined">Rechazados</option>
-              </select>
-            </div>
-          </div>
+          <button 
+            type="button"
+            onClick={onOpenBooking}
+            className="bg-primary hover:bg-primary-container text-white py-2.5 px-5 rounded-full font-bold text-xs shadow transition-all flex items-center gap-1.5 active:scale-95 duration-100 cursor-pointer self-start xl:self-center"
+          >
+            <Plus className="w-3.5 h-3.5" /> Registrar Evento
+          </button>
         </header>
+
+        {/* Search and Filters bar */}
+        <div className="flex flex-col sm:flex-row gap-3 w-full mb-8">
+          <div className="relative w-full sm:w-64">
+            <Search className="w-4 h-4 text-outline absolute left-3 top-1/2 -translate-y-1/2" />
+            <input 
+              type="text" 
+              placeholder="Buscar solicitud..." 
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-9 pr-4 py-2 text-sm bg-surface-container-lowest border border-outline-variant rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all shadow-sm shadow-black/5"
+            />
+          </div>
+          <div className="relative w-full sm:w-48">
+            <Filter className="w-4 h-4 text-outline absolute left-3 top-1/2 -translate-y-1/2" />
+            <select 
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value as any)}
+              className="w-full pl-9 pr-8 py-2 text-sm bg-surface-container-lowest border border-outline-variant rounded-xl appearance-none focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all shadow-sm"
+            >
+              <option value="All">Todos los Estados</option>
+              <option value="Pending">Pendientes</option>
+              <option value="Approved">Aprobados</option>
+              <option value="Declined">Rechazados</option>
+            </select>
+          </div>
+        </div>
 
         {/* Requests Bento Grid layout */}
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
@@ -242,16 +177,6 @@ export default function AdminInbox({
                     <button 
                       onClick={(e) => {
                         e.stopPropagation();
-                        onDeclineRequest(req.id);
-                      }}
-                      disabled={req.status === 'Declined'}
-                      className="flex-1 sm:flex-none px-4 py-2 border border-outline/50 hover:bg-surface-container hover:text-error hover:border-error text-on-surface text-xs font-bold rounded-lg transition-all cursor-pointer disabled:opacity-50 disabled:pointer-events-none"
-                    >
-                      Rechazar
-                    </button>
-                    <button 
-                      onClick={(e) => {
-                        e.stopPropagation();
                         onSelectRequest(req);
                       }}
                       className="flex-1 sm:flex-none px-4 py-2 bg-primary hover:bg-on-primary-container text-on-primary text-xs font-bold rounded-lg shadow-sm transition-all cursor-pointer"
@@ -310,29 +235,6 @@ export default function AdminInbox({
                 <span>El promedio de respuesta es de 4 horas para mantener la excelencia comercial.</span>
               </div>
             </div>
-
-            {/* Priority Alert card for Urgent tasks (Corporate Event EVT-4832) */}
-            {urgentRequest && (
-              <div className="bg-error-container text-on-error-container rounded-2xl p-5 shadow-sm border border-error/15 relative overflow-hidden">
-                <div className="flex items-start gap-3">
-                  <span className="w-9 h-9 rounded-full bg-error/10 flex items-center justify-center shrink-0">
-                    <AlertTriangle className="w-5 h-5 text-error" />
-                  </span>
-                  <div>
-                    <h4 className="font-display font-bold text-base text-on-error-container mb-1">Requerimiento Urgente</h4>
-                    <p className="text-xs opacity-90 leading-relaxed mb-4">
-                      "{urgentRequest.title}" ha sido solicitado por {urgentRequest.requesterName} y requiere respuesta inmediata para trámites de locación corporativa.
-                    </p>
-                    <button 
-                      onClick={() => onSelectRequest(urgentRequest)}
-                      className="font-bold text-xs text-error hover:text-on-error-container underline flex items-center gap-1 cursor-pointer"
-                    >
-                      Revisar ahora <ChevronRight className="w-3 h-3" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
 
           </aside>
 

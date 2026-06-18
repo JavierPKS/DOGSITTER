@@ -488,7 +488,7 @@ export default function ScheduleView({ requests, onGoBack }: ScheduleViewProps) 
                 <span>Tiempo Promedio de Coche</span>
               </div>
               <p className="text-on-surface-variant text-xs leading-relaxed font-medium">
-                La cocina operativa inicia preparación de banquetes gourmet <strong className="text-primary">3 horas antes</strong> del despacho. El bloqueo preventivo garantiza cero retrasos para coordinadores VIP de DogSitter.
+                La cocina operativa inicia preparación de banquetes gourmet <strong className="text-primary">3 horas antes</strong> del despacho. El bloqueo preventivo garantiza cero retrasos para coordinadores de DogSitter.
               </p>
             </div>
 

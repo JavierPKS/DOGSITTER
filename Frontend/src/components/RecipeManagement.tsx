@@ -20,30 +20,83 @@ import { Recipe, Ingredient } from '../types';
 interface RecipeManagementProps {
   recipes: Recipe[];
   onSaveRecipe: (updatedRecipe: Recipe) => void;
+  onDeleteRecipe: (recipeId: string) => void;
   onGoBack: () => void;
 }
 
 export default function RecipeManagement({ 
   recipes, 
   onSaveRecipe,
+  onDeleteRecipe,
   onGoBack 
 }: RecipeManagementProps) {
-  const [selectedRecipeId, setSelectedRecipeId] = useState<string>(recipes[0]?.id || 'REC-2049');
+  const [selectedRecipeId, setSelectedRecipeId] = useState<string>('');
   const [activeRecipe, setActiveRecipe] = useState<Recipe | null>(null);
   const [filterQuery, setFilterQuery] = useState('');
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   // Sync selected recipe detail
   useEffect(() => {
-    const found = recipes.find(r => r.id === selectedRecipeId);
+    let currentId = selectedRecipeId;
+    if ((!currentId || !recipes.some(r => r.id === currentId)) && recipes.length > 0) {
+      currentId = recipes[0].id;
+      setSelectedRecipeId(currentId);
+    }
+
+    const found = recipes.find(r => r.id === currentId);
     if (found) {
       // Create a deep copy of search results so edits are local till saved
       setActiveRecipe(JSON.parse(JSON.stringify(found)));
+    } else {
+      setActiveRecipe(null);
     }
   }, [selectedRecipeId, recipes]);
 
   if (!activeRecipe) {
-    return <div className="p-8">Cargando los parámetros de receta...</div>;
+    return (
+      <div id="recipe-editor-portal" className="min-h-[calc(100vh-4rem)] bg-surface text-on-surface py-8 px-4 sm:px-6 md:px-8">
+        <div className="max-w-xl mx-auto text-center py-16 space-y-6">
+          <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto border border-primary/20">
+            <Trash2 className="w-8 h-8 text-primary" />
+          </div>
+          <div className="space-y-2">
+            <h2 className="text-2xl font-display font-black text-on-surface tracking-tight">No Hay Recetas Disponibles</h2>
+            <p className="text-sm text-on-surface-variant leading-relaxed">
+              No hay recetas en este momento. Crea una nueva receta base para iniciar el cálculo automático de ingredientes.
+            </p>
+          </div>
+          <div className="flex justify-center gap-3">
+            <button 
+              onClick={onGoBack}
+              className="px-5 py-2.5 border border-outline hover:bg-surface-container text-on-surface font-semibold text-xs rounded-full cursor-pointer transition-colors"
+            >
+              Volver a la Bandeja
+            </button>
+            <button 
+              onClick={() => {
+                const newRecipeId = `REC-${Math.floor(2000 + Math.random() * 100)}`;
+                const newRecipe: Recipe = {
+                  id: newRecipeId,
+                  name: 'Nueva Receta Especial',
+                  type: 'Equilibrado',
+                  status: 'Active',
+                  description: 'Receta base para calcular los requerimientos en la planificación del catering.',
+                  ingredients: [
+                    { id: '1', name: 'Carne de Res Molida Orgánica', quantity: 250, unit: 'g' }
+                  ]
+                };
+                onSaveRecipe(newRecipe);
+                setSelectedRecipeId(newRecipeId);
+              }}
+              className="bg-primary hover:bg-primary/95 text-white font-semibold text-xs px-5 py-2.5 rounded-full flex items-center gap-1.5 shadow cursor-pointer transition-colors animate-bounce"
+            >
+              <Plus className="w-4 h-4" /> Crear Nueva Receta
+            </button>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   // Filter recipes left sidebar
@@ -233,23 +286,80 @@ export default function RecipeManagement({
               
               {/* Recipe Canvas Header */}
               <div className="flex flex-col sm:flex-row justify-between items-start gap-4 border-b border-outline-variant/20 pb-5 mb-6">
-                <div>
-                  <div className="flex items-center gap-2.5 mb-1 text-xs">
+                <div className="flex-grow w-full space-y-3">
+                  <div className="flex items-center gap-2.5 text-xs">
                     <span className="bg-tertiary-container text-on-tertiary-container px-2.5 py-0.5 rounded-full font-semibold">Base de Cálculo de Motor</span>
                     <span className="text-on-surface-variant font-medium">ID: {activeRecipe.id}</span>
                   </div>
-                  <h2 className="text-2xl font-display font-bold text-on-surface flex items-center gap-2">
-                    {activeRecipe.name}
-                    <button className="text-on-surface-variant/50 hover:text-primary transition-colors cursor-pointer" aria-label="Editar nombre de receta">
-                      <Edit3 className="w-4 h-4" />
-                    </button>
-                  </h2>
-                  <p className="text-xs text-on-surface-variant mt-1.5 leading-relaxed max-w-2xl">
-                    {activeRecipe.description}
-                  </p>
+                  
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-[10px] font-bold text-on-surface-variant uppercase mb-1">Nombre de la Receta</label>
+                      <input 
+                        type="text" 
+                        value={activeRecipe.name}
+                        onChange={(e) => setActiveRecipe({ ...activeRecipe, name: e.target.value })}
+                        className="w-full bg-surface-container border border-outline-variant/70 rounded-lg px-3 py-1.5 text-sm font-semibold text-on-surface focus:outline-none focus:ring-1 focus:ring-primary focus:border-transparent transition-all"
+                        placeholder="Nombre de la receta"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-bold text-on-surface-variant uppercase mb-1">Categoría / Tipo de Dieta</label>
+                      <input 
+                        type="text" 
+                        value={activeRecipe.type}
+                        onChange={(e) => setActiveRecipe({ ...activeRecipe, type: e.target.value })}
+                        className="w-full bg-surface-container border border-outline-variant/70 rounded-lg px-3 py-1.5 text-sm font-semibold text-on-surface focus:outline-none focus:ring-1 focus:ring-primary focus:border-transparent transition-all"
+                        placeholder="ej. Balanceado, Pesquetariano..."
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] font-bold text-on-surface-variant uppercase mb-1">Descripción de la Receta</label>
+                    <textarea 
+                      value={activeRecipe.description}
+                      onChange={(e) => setActiveRecipe({ ...activeRecipe, description: e.target.value })}
+                      rows={2}
+                      className="w-full bg-surface-container border border-outline-variant/70 rounded-lg px-3 py-1.5 text-xs text-on-surface focus:outline-none focus:ring-1 focus:ring-primary focus:border-transparent transition-all resize-none"
+                      placeholder="Agregue una breve descripción sobre esta receta..."
+                    />
+                  </div>
                 </div>
 
-                <div className="flex items-center gap-2 shrink-0">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 shrink-0">
+                  {showDeleteConfirm ? (
+                    <div className="bg-error-container p-2 rounded-xl border border-error/20 flex items-center justify-between gap-2 animate-fade-in">
+                      <span className="text-[10px] text-on-error-container font-black uppercase tracking-wider px-1">¿Eliminar Receta?</span>
+                      <div className="flex gap-1">
+                        <button
+                          onClick={() => {
+                            onDeleteRecipe(activeRecipe.id);
+                            setShowDeleteConfirm(false);
+                          }}
+                          className="px-2.5 py-1.5 bg-error hover:bg-error/90 text-white text-[10px] rounded-lg font-bold cursor-pointer"
+                        >
+                          Sí, borrar
+                        </button>
+                        <button
+                          onClick={() => setShowDeleteConfirm(false)}
+                          className="px-2.5 py-1.5 bg-surface-container border border-outline-variant/30 text-on-surface text-[10px] rounded-lg font-medium cursor-pointer"
+                        >
+                          No
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <button 
+                      onClick={() => setShowDeleteConfirm(true)}
+                      className="px-3 py-2 border border-error/35 text-error hover:bg-error/5 rounded-xl flex items-center gap-1.5 text-xs font-bold cursor-pointer transition-colors"
+                      title="Eliminar esta receta permanentemente"
+                    >
+                      <Trash2 className="w-4 h-4 text-error" />
+                      <span>Eliminar Receta</span>
+                    </button>
+                  )}
+
                   <button 
                     onClick={handleDiscard}
                     className="p-2 border border-outline-variant text-on-surface hover:bg-surface-container rounded-xl flex items-center gap-1 text-xs font-bold cursor-pointer"

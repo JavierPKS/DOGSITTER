@@ -14,31 +14,54 @@ import {
   Plus, 
   Minus 
 } from 'lucide-react';
-import { EventRequest } from '../types';
+import { EventRequest, Recipe } from '../types';
 
 interface ClientFormProps {
   onSubmit: (request: Omit<EventRequest, 'id' | 'status' | 'requesterAvatar' | 'requesterTier'>) => void;
   onNavigateToAdmin: () => void;
+  recipes?: Recipe[];
 }
 
-export default function ClientForm({ onSubmit, onNavigateToAdmin }: ClientFormProps) {
+export default function ClientForm({ onSubmit, onNavigateToAdmin, recipes = [] }: ClientFormProps) {
   const [step, setStep] = useState<number>(1);
   const [submitted, setSubmitted] = useState<boolean>(false);
 
+  // Selected canine recipes state
+  const [selectedRecipeIds, setSelectedRecipeIds] = useState<string[]>(() => {
+    return recipes.filter(r => r.status === 'Active').map(r => r.id);
+  });
+
+  // Helper to calculate minimum allowed date (3 days from now, blocking today & 2 following days)
+  const getMinDateString = () => {
+    const today = new Date();
+    // 3 days from now blocks today, tomorrow, and the next day
+    const minDateObj = new Date(today.getTime() + 3 * 24 * 60 * 60 * 1000);
+    const yyyy = minDateObj.getFullYear();
+    const mm = String(minDateObj.getMonth() + 1).padStart(2, '0');
+    const dd = String(minDateObj.getDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
+  };
+
   // Form Fields State
-  const [eventDate, setEventDate] = useState('');
+  const [eventDate, setEventDate] = useState(getMinDateString());
   const [startTime, setStartTime] = useState('');
   const [locationDetails, setLocationDetails] = useState('');
-  const [numDogs, setNumDogs] = useState<number>(5);
+  const [smallDogsCount, setSmallDogsCount] = useState<number>(2);
+  const [mediumDogsCount, setMediumDogsCount] = useState<number>(2);
+  const [largeDogsCount, setLargeDogsCount] = useState<number>(1);
+  const numDogs = smallDogsCount + mediumDogsCount + largeDogsCount;
   const [numHumans, setNumHumans] = useState<number>(10);
+  const [dogSize, setDogSize] = useState<'small' | 'medium' | 'large'>('small');
 
   // Menu Configuration State
   const [cakeType, setCakeType] = useState('peanut_butter');
   const [pupcakesQty, setPupcakesQty] = useState<number>(12);
   const [meatballsQty, setMeatballsQty] = useState<number>(24);
-  const [humanFood, setHumanFood] = useState<'finger_food' | 'sliders'>('finger_food');
+  const [selectedHumanFoods, setSelectedHumanFoods] = useState<string[]>(['finger_food']);
   const [includeAlcohol, setIncludeAlcohol] = useState(false);
-  const [specialNotes, setSpecialNotes] = useState('');
+  const [specialNotes, setSpecialNotes] = useState('Deseamos disfrutar de una hermosa celebración personalizada de catering gourmet.');
+  const [dietaryAlerts, setDietaryAlerts] = useState('Libre de granos, sin sal añadida, intolerancias comunes cubiertas.');
+  const [venueRequirements, setVenueRequirements] = useState('Espacio con sombra y acceso a agua potable para hidratación canina.');
 
   // Personal Info for mockup sake
   const [clientName, setClientName] = useState('Sarah Jenkins');
@@ -72,12 +95,17 @@ export default function ClientForm({ onSubmit, onNavigateToAdmin }: ClientFormPr
       cakeType,
       pupcakes: pupcakesQty,
       meatballs: meatballsQty,
-      humanFood,
+      humanFood: selectedHumanFoods.join(', '),
       includeAlcohol,
-      specialNotes: specialNotes || 'Deseamos disfrutar de una hermosa celebración personalizada con comida orgánica para cachorros.',
-      dietaryAlerts: 'Ninguna reportada, opción libre de granos seleccionada.',
-      venueRequirements: 'Territorio abierto cerrado con acceso directo a agua fresca.',
-      medicalStandby: false
+      dogSize: dogSize, // keep ref
+      smallDogs: smallDogsCount,
+      mediumDogs: mediumDogsCount,
+      largeDogs: largeDogsCount,
+      specialNotes: specialNotes,
+      dietaryAlerts: dietaryAlerts,
+      venueRequirements: venueRequirements,
+      medicalStandby: false,
+      selectedRecipeIds: selectedRecipeIds
     });
     setSubmitted(true);
   };
@@ -85,17 +113,23 @@ export default function ClientForm({ onSubmit, onNavigateToAdmin }: ClientFormPr
   const handleReset = () => {
     setStep(1);
     setSubmitted(false);
-    setEventDate('');
+    setEventDate(getMinDateString());
     setStartTime('');
     setLocationDetails('');
-    setNumDogs(5);
+    setSmallDogsCount(2);
+    setMediumDogsCount(2);
+    setLargeDogsCount(1);
     setNumHumans(10);
+    setDogSize('small');
     setCakeType('peanut_butter');
     setPupcakesQty(12);
     setMeatballsQty(24);
-    setHumanFood('finger_food');
+    setSelectedHumanFoods(['finger_food']);
     setIncludeAlcohol(false);
     setSpecialNotes('');
+    setDietaryAlerts('');
+    setVenueRequirements('');
+    setSelectedRecipeIds(recipes.filter(r => r.status === 'Active').map(r => r.id));
   };
 
   // Helper labels for Review stage
@@ -106,6 +140,26 @@ export default function ClientForm({ onSubmit, onNavigateToAdmin }: ClientFormPr
       case 'pumpkin_apple': return 'Calabaza y Manzana (Estómago Sensible)';
       case 'none': return 'Sin Pastel';
       default: return value;
+    }
+  };
+
+  const getHumanFoodLabel = (value: string) => {
+    switch (value.trim()) {
+      case 'finger_food': return 'Finger Food Ligero';
+      case 'sliders': return 'Mini Hamburguesas (Sliders)';
+      case 'sweets': return 'Planchas Dulces & Postres';
+      case 'brews': return 'Estación de Café & Té';
+      default: return value;
+    }
+  };
+
+  const toggleHumanFood = (option: string) => {
+    if (selectedHumanFoods.includes(option)) {
+      if (selectedHumanFoods.length > 1) {
+        setSelectedHumanFoods(selectedHumanFoods.filter(item => item !== option));
+      }
+    } else {
+      setSelectedHumanFoods([...selectedHumanFoods, option]);
     }
   };
 
@@ -126,14 +180,6 @@ export default function ClientForm({ onSubmit, onNavigateToAdmin }: ClientFormPr
               Planifiquemos la celebración perfecta para tu amigo peludo.
             </p>
           </div>
-          <button 
-            type="button"
-            onClick={onNavigateToAdmin}
-            className="self-start md:self-center bg-inverse-surface hover:bg-on-surface-variant text-inverse-on-surface font-semibold text-sm px-5 py-2.5 rounded-full shadow-sm hover:shadow transition-all flex items-center gap-2 cursor-pointer"
-          >
-            <PawPrint className="w-4 h-4 text-primary-container" />
-            Ir al Portal del Administrador
-          </button>
         </div>
 
         {/* Step Indicator Progress Bar */}
@@ -269,10 +315,14 @@ export default function ClientForm({ onSubmit, onNavigateToAdmin }: ClientFormPr
                             id="eventDate"
                             type="date"
                             required
+                            min={getMinDateString()}
                             value={eventDate}
                             onChange={(e) => setEventDate(e.target.value)}
                             className="w-full rounded-xl border border-outline-variant/60 bg-surface-container-lowest px-4 py-3 text-on-surface focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
                           />
+                          <p className="text-[10px] text-primary/80 mt-1 leading-snug font-medium">
+                            * Reserva requerida con mínimo 3 días de anticipación para la preparación artesanal de los platillos.
+                          </p>
                         </div>
                       </div>
 
@@ -314,70 +364,142 @@ export default function ClientForm({ onSubmit, onNavigateToAdmin }: ClientFormPr
                       {/* Guest Count Estimate */}
                       <div className="flex flex-col gap-2 md:col-span-2">
                         <label className="text-sm font-semibold text-on-surface">
-                          Asistencia Estimada
+                          Asistencia Estimada (Distribución de Tamaños y Huéspedes)
                         </label>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
                           
-                          {/* Dogs Count Selector */}
-                          <div className="bg-surface-container-lowest p-4 rounded-xl flex items-center justify-between border border-outline-variant/30 shadow-sm">
+                          {/* Small Dogs Counter */}
+                          <div className="bg-surface-container-lowest p-3 rounded-xl border border-outline-variant/30 shadow-sm flex flex-col justify-between gap-2">
                             <div className="flex items-center gap-2">
-                              <span className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                                <PawPrint className="w-5 h-5 text-primary" />
+                              <span className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                                <PawPrint className="w-4 h-4 text-primary" />
                               </span>
                               <div>
-                                <span className="font-semibold text-on-surface block">Perros</span>
-                                <span className="text-xs text-on-surface-variant">Invitados de cuatro patas</span>
+                                <span className="font-semibold text-xs text-on-surface block">Chicos/Pequeños</span>
+                                <span className="text-[10px] text-primary font-bold block">Peso: Hasta 10 kg</span>
+                                <span className="text-[10px] text-on-surface-variant font-mono">Factor: *1</span>
                               </div>
                             </div>
-                            <div className="flex items-center gap-3">
+                            <div className="flex items-center justify-between mt-2">
                               <button
                                 type="button"
-                                onClick={() => numDogs > 1 && setNumDogs(numDogs - 1)}
+                                onClick={() => smallDogsCount > 0 && setSmallDogsCount(smallDogsCount - 1)}
                                 className="w-8 h-8 rounded-full border border-outline flex items-center justify-center text-on-surface hover:bg-surface-container-low transition-colors cursor-pointer"
                               >
-                                <Minus className="w-4 h-4" />
+                                <Minus className="w-3.5 h-3.5" />
                               </button>
-                              <span className="font-bold text-lg w-6 text-center">{numDogs}</span>
+                              <span className="font-bold text-base w-6 text-center">{smallDogsCount}</span>
                               <button
                                 type="button"
-                                onClick={() => setNumDogs(numDogs + 1)}
+                                onClick={() => setSmallDogsCount(smallDogsCount + 1)}
                                 className="w-8 h-8 rounded-full border border-outline flex items-center justify-center text-on-surface hover:bg-surface-container-low transition-colors cursor-pointer"
                               >
-                                <Plus className="w-4 h-4" />
+                                <Plus className="w-3.5 h-3.5" />
                               </button>
                             </div>
                           </div>
 
-                          {/* Humans Count Selector */}
-                          <div className="bg-surface-container-lowest p-4 rounded-xl flex items-center justify-between border border-outline-variant/30 shadow-sm">
+                          {/* Medium Dogs Counter */}
+                          <div className="bg-surface-container-lowest p-3 rounded-xl border border-outline-variant/30 shadow-sm flex flex-col justify-between gap-2">
                             <div className="flex items-center gap-2">
-                              <span className="w-10 h-10 rounded-full bg-secondary/10 flex items-center justify-center shrink-0">
-                                <Users className="w-5 h-5 text-secondary" />
+                              <span className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                                <PawPrint className="w-4 h-4 text-primary" />
                               </span>
                               <div>
-                                <span className="font-semibold text-on-surface block">Humanos</span>
-                                <span className="text-xs text-on-surface-variant">Dueños y amigos</span>
+                                <span className="font-semibold text-xs text-on-surface block">Medianos</span>
+                                <span className="text-[10px] text-primary font-bold block">Peso: 11 - 25 kg</span>
+                                <span className="text-[10px] text-on-surface-variant font-mono">Factor: *2</span>
                               </div>
                             </div>
-                            <div className="flex items-center gap-3">
+                            <div className="flex items-center justify-between mt-2">
+                              <button
+                                type="button"
+                                onClick={() => mediumDogsCount > 0 && setMediumDogsCount(mediumDogsCount - 1)}
+                                className="w-8 h-8 rounded-full border border-outline flex items-center justify-center text-on-surface hover:bg-surface-container-low transition-colors cursor-pointer"
+                              >
+                                <Minus className="w-3.5 h-3.5" />
+                              </button>
+                              <span className="font-bold text-base w-6 text-center">{mediumDogsCount}</span>
+                              <button
+                                type="button"
+                                onClick={() => setMediumDogsCount(mediumDogsCount + 1)}
+                                className="w-8 h-8 rounded-full border border-outline flex items-center justify-center text-on-surface hover:bg-surface-container-low transition-colors cursor-pointer"
+                              >
+                                <Plus className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* Large Dogs Counter */}
+                          <div className="bg-surface-container-lowest p-3 rounded-xl border border-outline-variant/30 shadow-sm flex flex-col justify-between gap-2">
+                            <div className="flex items-center gap-2">
+                              <span className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                                <PawPrint className="w-4 h-4 text-primary" />
+                              </span>
+                              <div>
+                                <span className="font-semibold text-xs text-on-surface block">Grandes</span>
+                                <span className="text-[10px] text-primary font-bold block">Peso: Más de 25 kg</span>
+                                <span className="text-[10px] text-on-surface-variant font-mono">Factor: *3</span>
+                              </div>
+                            </div>
+                            <div className="flex items-center justify-between mt-2">
+                              <button
+                                type="button"
+                                onClick={() => largeDogsCount > 0 && setLargeDogsCount(largeDogsCount - 1)}
+                                className="w-8 h-8 rounded-full border border-outline flex items-center justify-center text-on-surface hover:bg-surface-container-low transition-colors cursor-pointer"
+                              >
+                                <Minus className="w-3.5 h-3.5" />
+                              </button>
+                              <span className="font-bold text-base w-6 text-center">{largeDogsCount}</span>
+                              <button
+                                type="button"
+                                onClick={() => setLargeDogsCount(largeDogsCount + 1)}
+                                className="w-8 h-8 rounded-full border border-outline flex items-center justify-center text-on-surface hover:bg-surface-container-low transition-colors cursor-pointer"
+                              >
+                                <Plus className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* Humans Counter */}
+                          <div className="bg-surface-container-lowest p-3 rounded-xl border border-outline-variant/30 shadow-sm flex flex-col justify-between gap-2">
+                            <div className="flex items-center gap-2">
+                              <span className="w-8 h-8 rounded-full bg-secondary/10 flex items-center justify-center shrink-0">
+                                <Users className="w-4 h-4 text-secondary" />
+                              </span>
+                              <div>
+                                <span className="font-semibold text-xs text-on-surface block">Humanos</span>
+                                <span className="text-[10px] text-on-surface-variant font-medium">Dueños y amigos</span>
+                              </div>
+                            </div>
+                            <div className="flex items-center justify-between mt-2">
                               <button
                                 type="button"
                                 onClick={() => numHumans > 1 && setNumHumans(numHumans - 1)}
                                 className="w-8 h-8 rounded-full border border-outline flex items-center justify-center text-on-surface hover:bg-surface-container-low transition-colors cursor-pointer"
                               >
-                                <Minus className="w-4 h-4" />
+                                <Minus className="w-3.5 h-3.5" />
                               </button>
-                              <span className="font-bold text-lg w-6 text-center">{numHumans}</span>
+                              <span className="font-bold text-base w-6 text-center">{numHumans}</span>
                               <button
                                 type="button"
                                 onClick={() => setNumHumans(numHumans + 1)}
                                 className="w-8 h-8 rounded-full border border-outline flex items-center justify-center text-on-surface hover:bg-surface-container-low transition-colors cursor-pointer"
                               >
-                                <Plus className="w-4 h-4" />
+                                <Plus className="w-3.5 h-3.5" />
                               </button>
                             </div>
                           </div>
 
+                        </div>
+
+                        {/* Summary indicator */}
+                        <div className="p-3 bg-surface-container-low rounded-xl border border-outline-variant/20 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 text-xs mt-2">
+                          <span className="font-medium text-on-surface-variant">Resumen de Huéspedes del Banquete:</span>
+                          <span className="font-bold text-primary">
+                            {numDogs} Perros Totales ({smallDogsCount} Chicos, {mediumDogsCount} Medianos, {largeDogsCount} Grandes) y {numHumans} Humanos
+                          </span>
                         </div>
                       </div>
 
@@ -397,11 +519,34 @@ export default function ClientForm({ onSubmit, onNavigateToAdmin }: ClientFormPr
                       </p>
                     </div>
 
-                    {/* Canine Menu Section */}
+                     {/* Canine Menu Section */}
                     <div className="bg-surface-container-lowest p-5 rounded-xl border border-primary/15 shadow-sm space-y-4">
-                      <h3 className="text-lg font-display font-bold text-primary flex items-center gap-2">
-                        <PawPrint className="w-5 h-5" /> Menú Canino
-                      </h3>
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-outline-variant/25 pb-3">
+                        <h3 className="text-lg font-display font-bold text-primary flex items-center gap-2">
+                          <PawPrint className="w-5 h-5" /> Menú Canino
+                        </h3>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setPupcakesQty(Math.max(6, numDogs * 2));
+                            setMeatballsQty(Math.max(12, numDogs * 4));
+                            // Auto select a good mix based on guest sizes
+                            if (numHumans >= 15) {
+                              setSelectedHumanFoods(['finger_food', 'sliders']);
+                            } else {
+                              setSelectedHumanFoods(['finger_food']);
+                            }
+                          }}
+                          className="bg-primary hover:bg-on-primary-container text-white text-xs font-extrabold px-4 py-2 rounded-full shadow hover:scale-[1.02] transition-all flex items-center gap-1.5 cursor-pointer"
+                        >
+                          <Sparkles className="w-3.5 h-3.5" /> Generar Cantidad Recomendada
+                        </button>
+                      </div>
+
+                      {/* Recommend notification context */}
+                      <p className="text-xs text-on-surface-variant font-medium">
+                        Basado en <strong className="text-primary font-bold">{numDogs} perros</strong> y <strong className="text-secondary font-bold">{numHumans} humanos</strong> ingresados, la recolección automática sugerirá la dotación óptima de premios y selecciones para tu banquete.
+                      </p>
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {/* Celebration Cake Selection */}
@@ -451,6 +596,58 @@ export default function ClientForm({ onSubmit, onNavigateToAdmin }: ClientFormPr
                           </div>
                         </div>
                       </div>
+
+                      {/* Selection of Active Canine Recipes / Dishes */}
+                      <div className="bg-surface-container-low/40 p-4 rounded-xl border border-outline-variant/30 space-y-3">
+                        <label className="text-sm font-bold text-on-surface flex items-center gap-2">
+                          <PawPrint className="w-4 h-4 text-primary animate-pulse" /> Platillos y Recetas Culinarias Activas en Menú Canino
+                        </label>
+                        <p className="text-xs text-on-surface-variant leading-relaxed">
+                          Selecciona cuáles recetas y banquetes se prepararán para los caninos invitados. La escala y materiales requeridos se computarán dinámicamente:
+                        </p>
+
+                        {recipes && recipes.length > 0 ? (
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-1.5">
+                            {recipes.map((recipe) => (
+                              <label 
+                                key={recipe.id}
+                                className={`flex items-start gap-3 p-3 rounded-xl border transition-all cursor-pointer ${
+                                  selectedRecipeIds.includes(recipe.id)
+                                    ? 'bg-primary/5 border-primary shadow-sm ring-1 ring-primary'
+                                    : 'bg-surface-container-low border-outline-variant/30 hover:bg-surface-container-high'
+                                }`}
+                              >
+                                <input
+                                  type="checkbox"
+                                  checked={selectedRecipeIds.includes(recipe.id)}
+                                  onChange={() => {
+                                    if (selectedRecipeIds.includes(recipe.id)) {
+                                      setSelectedRecipeIds(selectedRecipeIds.filter(id => id !== recipe.id));
+                                    } else {
+                                      setSelectedRecipeIds([...selectedRecipeIds, recipe.id]);
+                                    }
+                                  }}
+                                  className="mt-0.5 rounded border-outline-variant text-primary focus:ring-primary w-4 h-4 cursor-pointer"
+                                />
+                                <div className="text-left font-medium flex-1">
+                                  <span className="text-xs text-on-surface font-semibold block">{recipe.name}</span>
+                                  <span className="text-[10px] text-on-surface-variant line-clamp-1">{recipe.description}</span>
+                                  <div className="flex items-center justify-between mt-1.5">
+                                    <span className="bg-tertiary-container text-on-tertiary-container font-semibold text-[8px] px-1.5 py-0.5 rounded uppercase">
+                                      {recipe.type}
+                                    </span>
+                                    <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded ${recipe.status === 'Active' ? 'bg-green-150 text-green-800' : 'bg-red-150 text-red-00'}`}>
+                                      {recipe.status === 'Active' ? 'Activo' : 'Inactivo'}
+                                    </span>
+                                  </div>
+                                </div>
+                              </label>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-xs text-on-surface-variant italic">No hay recetas registradas en el sistema.</p>
+                        )}
+                      </div>
                     </div>
 
                     {/* Human Menu Section */}
@@ -461,37 +658,71 @@ export default function ClientForm({ onSubmit, onNavigateToAdmin }: ClientFormPr
 
                       {/* Catering Style selection */}
                       <div className="flex flex-col gap-2">
-                        <label className="text-sm font-semibold text-on-surface mb-1">Estilo de Catering</label>
+                        <label className="text-sm font-semibold text-on-surface mb-1">Estilo de Catering (Selecciona una o más opciones)</label>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                          <label className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${humanFood === 'finger_food' ? 'border-primary bg-primary/5' : 'border-outline-variant/30 bg-surface-container-low hover:bg-surface-container-high'}`}>
+                          <div 
+                            onClick={() => toggleHumanFood('finger_food')}
+                            className={`flex items-start gap-3 p-3.5 rounded-xl border cursor-pointer select-none transition-all ${selectedHumanFoods.includes('finger_food') ? 'border-primary bg-primary/5 ring-1 ring-primary' : 'border-outline-variant/30 bg-surface-container-low hover:bg-surface-container-high'}`}
+                          >
                             <input
-                              type="radio"
-                              name="humanFood"
-                              value="finger_food"
-                              checked={humanFood === 'finger_food'}
-                              onChange={() => setHumanFood('finger_food')}
-                              className="w-4 h-4 text-primary focus:ring-primary border-outline"
+                              type="checkbox"
+                              checked={selectedHumanFoods.includes('finger_food')}
+                              readOnly
+                              className="w-4 h-4 text-primary rounded focus:ring-primary border-outline mt-0.5 cursor-pointer"
                             />
                             <div>
                               <span className="font-semibold text-sm text-on-surface block">Finger Food Ligero</span>
                               <span className="text-xs text-on-surface-variant">Sándwiches pequeños y bocadillos variados</span>
                             </div>
-                          </label>
+                          </div>
 
-                          <label className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${humanFood === 'sliders' ? 'border-primary bg-primary/5' : 'border-outline-variant/30 bg-surface-container-low hover:bg-surface-container-high'}`}>
+                          <div 
+                            onClick={() => toggleHumanFood('sliders')}
+                            className={`flex items-start gap-3 p-3.5 rounded-xl border cursor-pointer select-none transition-all ${selectedHumanFoods.includes('sliders') ? 'border-primary bg-primary/5 ring-1 ring-primary' : 'border-outline-variant/30 bg-surface-container-low hover:bg-surface-container-high'}`}
+                          >
                             <input
-                              type="radio"
-                              name="humanFood"
-                              value="sliders"
-                              checked={humanFood === 'sliders'}
-                              onChange={() => setHumanFood('sliders')}
-                              className="w-4 h-4 text-primary focus:ring-primary border-outline"
+                              type="checkbox"
+                              checked={selectedHumanFoods.includes('sliders')}
+                              readOnly
+                              className="w-4 h-4 text-primary rounded focus:ring-primary border-outline mt-0.5 cursor-pointer"
                             />
                             <div>
                               <span className="font-semibold text-sm text-on-surface block">Mini Hamburguesas (Sliders)</span>
                               <span className="text-xs text-on-surface-variant">Bocados medianos de carne y vegetarianos</span>
                             </div>
-                          </label>
+                          </div>
+
+                          <div 
+                            onClick={() => toggleHumanFood('sweets')}
+                            className={`flex items-start gap-3 p-3.5 rounded-xl border cursor-pointer select-none transition-all ${selectedHumanFoods.includes('sweets') ? 'border-primary bg-primary/5 ring-1 ring-primary' : 'border-outline-variant/30 bg-surface-container-low hover:bg-surface-container-high'}`}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={selectedHumanFoods.includes('sweets')}
+                              readOnly
+                              className="w-4 h-4 text-primary rounded focus:ring-primary border-outline mt-0.5 cursor-pointer"
+                            />
+                            <div>
+                              <span className="font-semibold text-sm text-on-surface block">Mesa de Postres Dulces</span>
+                              <span className="text-xs text-on-surface-variant">Mini Cupcakes de fruta, alfajores y brownies</span>
+                            </div>
+                          </div>
+
+                          <div 
+                            onClick={() => toggleHumanFood('brews')}
+                            className={`flex items-start gap-3 p-3.5 rounded-xl border cursor-pointer select-none transition-all ${selectedHumanFoods.includes('brews') ? 'border-primary bg-primary/5 ring-1 ring-primary' : 'border-outline-variant/30 bg-surface-container-low hover:bg-surface-container-high'}`}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={selectedHumanFoods.includes('brews')}
+                              readOnly
+                              className="w-4 h-4 text-primary rounded focus:ring-primary border-outline mt-0.5 cursor-pointer"
+                            />
+                            <div>
+                              <span className="font-semibold text-sm text-on-surface block">Estación de Café & Té</span>
+                              <span className="text-xs text-on-surface-variant">Café de grano orgánico filtrado y té de hierbas</span>
+                            </div>
+                          </div>
                         </div>
                       </div>
 
@@ -513,19 +744,59 @@ export default function ClientForm({ onSubmit, onNavigateToAdmin }: ClientFormPr
                       </div>
                     </div>
 
-                    {/* Special Requests textarea */}
-                    <div className="flex flex-col gap-2">
-                      <label htmlFor="specialNotes" className="text-sm font-semibold text-on-surface select-none">
-                        Alergias y Requerimientos Especiales
-                      </label>
-                      <textarea
-                        id="specialNotes"
-                        rows={3}
-                        placeholder="Por favor, detalla cualquier restricción dietética específica (por ejemplo, alergia al trigo, sin pollo) u otros requerimientos..."
-                        value={specialNotes}
-                        onChange={(e) => setSpecialNotes(e.target.value)}
-                        className="w-full rounded-xl border border-outline-variant/60 bg-surface-container-lowest px-4 py-3 text-on-surface placeholder:text-on-surface-variant/40 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all resize-none"
-                      />
+                     {/* Required Event Details Section */}
+                    <div className="space-y-4 pt-4 border-t border-outline-variant/20">
+                      <h3 className="text-sm font-bold text-on-surface uppercase tracking-wider flex items-center gap-1.5 select-none">
+                        <span>Detalles Obligatorios Adicionales del Evento</span>
+                      </h3>
+
+                      {/* Special Notes - Required */}
+                      <div className="flex flex-col gap-1.5 text-left">
+                        <label htmlFor="specialNotes" className="text-xs font-bold text-on-surface-variant uppercase flex items-center gap-1">
+                          📋 Notas Especiales / Observaciones Generales <span className="text-error font-bold">*</span>
+                        </label>
+                        <textarea
+                          id="specialNotes"
+                          rows={2}
+                          required
+                          placeholder="Escribe observaciones o solicitudes generales para la celebración (por ejemplo, actividades deseadas, preferencias de decoración)..."
+                          value={specialNotes}
+                          onChange={(e) => setSpecialNotes(e.target.value)}
+                          className="w-full rounded-xl border border-outline-variant/60 bg-surface-container-lowest px-4 py-2.5 text-sm text-on-surface placeholder:text-on-surface-variant/40 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all resize-none"
+                        />
+                      </div>
+
+                      {/* Dietary Alerts - Required */}
+                      <div className="flex flex-col gap-1.5 text-left">
+                        <label htmlFor="dietaryAlerts" className="text-xs font-bold text-on-surface-variant uppercase flex items-center gap-1">
+                          🥩 Restricciones Alimentarias / Alergias Caninas <span className="text-error font-bold">*</span>
+                        </label>
+                        <textarea
+                          id="dietaryAlerts"
+                          required
+                          rows={2}
+                          placeholder="Especifica restricciones alimentarias obligatorias caninas (por ejemplo, libre de granos, alergia al pollo o res)..."
+                          value={dietaryAlerts}
+                          onChange={(e) => setDietaryAlerts(e.target.value)}
+                          className="w-full rounded-xl border border-outline-variant/60 bg-surface-container-lowest px-4 py-2.5 text-sm text-on-surface placeholder:text-on-surface-variant/40 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all resize-none"
+                        />
+                      </div>
+
+                      {/* Venue Requirements - Required */}
+                      <div className="flex flex-col gap-1.5 text-left">
+                        <label htmlFor="venueRequirements" className="text-xs font-bold text-on-surface-variant uppercase flex items-center gap-1">
+                          🏡 Requerimientos de la Locación / Espacio <span className="text-error font-bold">*</span>
+                        </label>
+                        <textarea
+                          id="venueRequirements"
+                          required
+                          rows={2}
+                          placeholder="Requerimientos logísticos de la locación (por ejemplo, tomas de agua potable, áreas cercadas deseadas, espacio techado)..."
+                          value={venueRequirements}
+                          onChange={(e) => setVenueRequirements(e.target.value)}
+                          className="w-full rounded-xl border border-outline-variant/60 bg-surface-container-lowest px-4 py-2.5 text-sm text-on-surface placeholder:text-on-surface-variant/40 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all resize-none"
+                        />
+                      </div>
                     </div>
                   </div>
                 )}
@@ -558,7 +829,7 @@ export default function ClientForm({ onSubmit, onNavigateToAdmin }: ClientFormPr
                           <span className="text-on-surface font-semibold text-right line-clamp-1">{locationDetails || 'No especificado'}</span>
                           
                           <span className="text-on-surface-variant">Invitados Estimados:</span>
-                          <span className="text-on-surface font-semibold text-right">{numDogs} Perros, {numHumans} Humanos</span>
+                          <span className="text-on-surface font-semibold text-right">{numDogs} Perros ({smallDogsCount} Chicos, {mediumDogsCount} Medianos, {largeDogsCount} Grandes), {numHumans} Humanos</span>
 
                           <span className="text-on-surface-variant">Cliente Solicitante:</span>
                           <span className="text-on-surface font-semibold text-right">{clientName}</span>
@@ -576,7 +847,9 @@ export default function ClientForm({ onSubmit, onNavigateToAdmin }: ClientFormPr
                           <span className="text-on-surface font-semibold text-right">{pupcakesQty} Pupcakes, {meatballsQty} Albóndigas</span>
 
                           <span className="text-on-surface-variant">Catering para Humanos:</span>
-                          <span className="text-on-surface font-semibold text-right">{humanFood === 'finger_food' ? 'Finger Food Ligero' : 'Mini Hamburguesas (Sliders)'}</span>
+                          <span className="text-on-surface font-semibold text-right">
+                            {selectedHumanFoods.map(getHumanFoodLabel).join(', ')}
+                          </span>
 
                           <span className="text-on-surface-variant">Servicio de Bebidas:</span>
                           <span className="text-on-surface font-semibold text-right">{includeAlcohol ? 'Incluye opción con Alcohol (pendiente de permisos)' : 'Únicamente Bebidas sin Alcohol'}</span>
@@ -584,12 +857,26 @@ export default function ClientForm({ onSubmit, onNavigateToAdmin }: ClientFormPr
                       </div>
 
                       {/* Special requirements panel */}
-                      {specialNotes && (
-                        <div className="p-4 border-t border-outline-variant/30 bg-surface-container-lowest">
-                          <span className="text-xs font-bold text-on-surface-variant uppercase tracking-widest block mb-1">Notas Adicionales</span>
-                          <p className="text-sm text-on-surface italic bg-surface-container-low/30 p-2 rounded-lg border border-outline-variant/20">{specialNotes}</p>
-                        </div>
-                      )}
+                      <div className="p-4 border-t border-outline-variant/30 bg-surface-container-lowest space-y-3">
+                        {specialNotes && (
+                          <div>
+                            <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest block mb-0.5">📋 Notas Especiales / Observaciones</span>
+                            <p className="text-xs text-on-surface italic bg-surface-container-low/30 p-2 rounded-lg border border-outline-variant/20">{specialNotes}</p>
+                          </div>
+                        )}
+                        {dietaryAlerts && (
+                          <div>
+                            <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest block mb-0.5">🥩 Restricciones Alimentarias</span>
+                            <p className="text-xs text-on-surface italic bg-surface-container-low/30 p-2 rounded-lg border border-outline-variant/20">{dietaryAlerts}</p>
+                          </div>
+                        )}
+                        {venueRequirements && (
+                          <div>
+                            <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest block mb-0.5 font-sans">🏡 Requerimientos de la Locación</span>
+                            <p className="text-xs text-on-surface italic bg-surface-container-low/30 p-2 rounded-lg border border-outline-variant/20">{venueRequirements}</p>
+                          </div>
+                        )}
+                      </div>
 
                     </div>
                   </div>

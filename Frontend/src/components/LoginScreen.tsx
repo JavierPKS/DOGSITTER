@@ -132,11 +132,11 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
                 <Sparkles className="w-5 h-5" />
               </span>
               <span className={`px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase ${selectedRole === 'client' ? 'bg-tertiary-fixed text-on-tertiary-container' : 'bg-surface-container-high text-on-surface-variant'}`}>
-                Invitado VIP
+                Cliente
               </span>
             </div>
             
-            <h3 className="font-display font-extrabold text-lg text-on-surface">Cliente VIP</h3>
+            <h3 className="font-display font-extrabold text-lg text-on-surface">Cliente</h3>
             <p className="text-xs text-on-surface-variant mt-2 leading-relaxed">
               Solicita cotizaciones, configura menús y pasteles para tus canes, visualiza la dotación idónea y revisa el estado de tus eventos.
             </p>
